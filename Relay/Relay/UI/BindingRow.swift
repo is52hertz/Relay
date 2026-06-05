@@ -1,0 +1,94 @@
+//
+//  BindingRow.swift
+//  Relay
+//
+//  绑定行：App 图标 + 名称(+失效标记) + 冲突标记 + 快捷键录入器 + 焦点行为选择。
+//  双向编辑通过自建 Binding 回写 AppModel（保持 model 封装）。录入器写我方 Hotkey，
+//  实际全局注册由 AppModel.hotkeysDidChange → HotkeyRegistrationService 完成。
+//
+
+import SwiftUI
+
+struct BindingRow: View {
+    let binding: HotkeyBinding
+    let isConflicting: Bool
+    let profileID: UUID
+
+    @Environment(AppModel.self) private var model
+    @Environment(TargetAppResolver.self) private var resolver
+
+    var body: some View {
+        HStack(spacing: 12) {
+            icon
+            VStack(alignment: .leading, spacing: 2) {
+                Text(binding.app.displayName)
+                if !resolver.isInstalled(binding.app) {
+                    Label("Not installed", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            if isConflicting {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.yellow)
+                    .help("This shortcut duplicates another in this profile; only the first is active.")
+                    .accessibilityLabel("Duplicate shortcut")
+            }
+
+            ShortcutRecorder(hotkey: hotkeyBinding)
+                .frame(width: 150)
+
+            behaviorPicker
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(binding.app.displayName)
+    }
+
+    @ViewBuilder private var icon: some View {
+        if let image = resolver.icon(for: binding.app) {
+            Image(nsImage: image).resizable().frame(width: 28, height: 28)
+        } else {
+            Image(systemName: "app.dashed")
+                .resizable().frame(width: 28, height: 28)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var behaviorPicker: some View {
+        Picker("Behavior", selection: behaviorBinding) {
+            ForEach(FocusBehavior.allCases) { behavior in
+                Text(behavior.displayName).tag(behavior)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .frame(width: 170)
+        .help(binding.behavior.summary)
+    }
+
+    private var behaviorBinding: Binding<FocusBehavior> {
+        Binding(
+            get: { binding.behavior },
+            set: {
+                var updated = binding
+                updated.behavior = $0
+                model.updateBinding(updated, in: profileID)
+            }
+        )
+    }
+
+    private var hotkeyBinding: Binding<Hotkey?> {
+        Binding(
+            get: { binding.hotkey },
+            set: {
+                var updated = binding
+                updated.hotkey = $0
+                model.updateBinding(updated, in: profileID)
+            }
+        )
+    }
+}

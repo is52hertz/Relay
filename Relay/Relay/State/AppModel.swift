@@ -69,8 +69,49 @@ final class AppModel {
         configuration.profiles.removeAll { $0.id == id }
         if configuration.activeProfileID == id {
             configuration.activeProfileID = configuration.profiles.first?.id
+            hotkeysDidChange?(activeProfile)
         }
         scheduleSave()
+    }
+
+    // MARK: - Binding CRUD（视图负责把 onDelete/onMove 解析为下面的调用，保持本类无 SwiftUI 依赖）
+
+    func addBinding(_ binding: HotkeyBinding, to profileID: UUID) {
+        guard let index = profileIndex(profileID) else { return }
+        configuration.profiles[index].bindings.append(binding)
+        didMutateProfile(profileID)
+    }
+
+    func updateBinding(_ binding: HotkeyBinding, in profileID: UUID) {
+        guard let pIndex = profileIndex(profileID),
+              let bIndex = configuration.profiles[pIndex].bindings.firstIndex(where: { $0.id == binding.id })
+        else { return }
+        configuration.profiles[pIndex].bindings[bIndex] = binding
+        didMutateProfile(profileID)
+    }
+
+    func removeBindings(_ ids: Set<UUID>, from profileID: UUID) {
+        guard let index = profileIndex(profileID) else { return }
+        configuration.profiles[index].bindings.removeAll { ids.contains($0.id) }
+        didMutateProfile(profileID)
+    }
+
+    /// 整体替换某 profile 的绑定（视图用于排序后回写）。
+    func setBindings(_ bindings: [HotkeyBinding], for profileID: UUID) {
+        guard let index = profileIndex(profileID) else { return }
+        configuration.profiles[index].bindings = bindings
+        didMutateProfile(profileID)
+    }
+
+    private func profileIndex(_ id: UUID) -> Int? {
+        configuration.profiles.firstIndex { $0.id == id }
+    }
+
+    private func didMutateProfile(_ id: UUID) {
+        scheduleSave()
+        if id == configuration.activeProfileID {
+            hotkeysDidChange?(activeProfile)
+        }
     }
 
     // MARK: - Settings

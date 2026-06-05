@@ -2,8 +2,8 @@
 //  SettingsRootView.swift
 //  Relay
 //
-//  设置/管理主界面：NavigationSplitView，侧栏 Profile 列表，详情为该 Profile 的绑定。
-//  PR1 为骨架——绑定行编辑、快捷键录入、行为选择在 PR3/PR4 加入。
+//  设置/管理主界面：NavigationSplitView。侧栏 = Profile 列表（增/改名/删/设为 active），
+//  详情 = 该 Profile 的绑定编辑（BindingsDetailView）。
 //
 
 import SwiftUI
@@ -11,31 +11,41 @@ import SwiftUI
 struct SettingsRootView: View {
     @Environment(AppModel.self) private var model
     @State private var selectedProfileID: UUID?
+    @State private var renamingProfileID: UUID?
+    @State private var renameText: String = ""
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedProfileID) {
                 Section("Profiles") {
                     ForEach(model.configuration.profiles) { profile in
-                        Text(profile.name).tag(profile.id)
+                        ProfileRow(
+                            name: profile.name,
+                            isActive: profile.id == model.configuration.activeProfileID
+                        )
+                        .tag(profile.id)
+                        .contextMenu {
+                            Button("Set as Active") { model.setActiveProfile(profile.id) }
+                                .disabled(profile.id == model.configuration.activeProfileID)
+                            Button("Rename…") { startRename(profile) }
+                            Divider()
+                            Button("Delete", role: .destructive) { delete(profile) }
+                        }
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 220)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 230)
             .toolbar {
                 ToolbarItem {
-                    Button {
-                        let profile = model.addProfile(name: "New Profile")
-                        selectedProfileID = profile.id
-                    } label: {
+                    Button(action: addProfile) {
                         Label("Add Profile", systemImage: "plus")
                     }
+                    .help("Create a new profile")
                 }
             }
         } detail: {
-            if let id = selectedProfileID ?? model.configuration.activeProfileID,
-               let profile = model.configuration.profiles.first(where: { $0.id == id }) {
-                ProfileDetailView(profile: profile)
+            if let profile = selectedProfile {
+                BindingsDetailView(profile: profile)
             } else {
                 ContentUnavailableView(
                     "No Profile Selected",
@@ -44,27 +54,64 @@ struct SettingsRootView: View {
                 )
             }
         }
-        .frame(minWidth: 640, minHeight: 420)
+        .frame(minWidth: 720, minHeight: 460)
+        .alert("Rename Profile", isPresented: renameAlertPresented) {
+            TextField("Name", text: $renameText)
+            Button("Rename") { commitRename() }
+            Button("Cancel", role: .cancel) { renamingProfileID = nil }
+        }
+    }
+
+    private var selectedProfile: Profile? {
+        let id = selectedProfileID ?? model.configuration.activeProfileID
+        return model.configuration.profiles.first { $0.id == id }
+    }
+
+    private var renameAlertPresented: Binding<Bool> {
+        Binding(
+            get: { renamingProfileID != nil },
+            set: { if !$0 { renamingProfileID = nil } }
+        )
+    }
+
+    private func addProfile() {
+        let profile = model.addProfile(name: "New Profile")
+        selectedProfileID = profile.id
+    }
+
+    private func delete(_ profile: Profile) {
+        if selectedProfileID == profile.id { selectedProfileID = nil }
+        model.deleteProfile(profile.id)
+    }
+
+    private func startRename(_ profile: Profile) {
+        renameText = profile.name
+        renamingProfileID = profile.id
+    }
+
+    private func commitRename() {
+        let trimmed = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let id = renamingProfileID, !trimmed.isEmpty {
+            model.renameProfile(id, to: trimmed)
+        }
+        renamingProfileID = nil
     }
 }
 
-private struct ProfileDetailView: View {
-    let profile: Profile
+private struct ProfileRow: View {
+    let name: String
+    let isActive: Bool
 
     var body: some View {
-        Group {
-            if profile.bindings.isEmpty {
-                ContentUnavailableView(
-                    "No Shortcuts",
-                    systemImage: "keyboard",
-                    description: Text("App + hotkey binding UI arrives in a later step.")
-                )
-            } else {
-                List(profile.bindings) { binding in
-                    Text(binding.app.displayName)
-                }
+        HStack {
+            Text(name)
+            Spacer()
+            if isActive {
+                Image(systemName: "bolt.fill")
+                    .font(.caption)
+                    .foregroundStyle(.tint)
+                    .accessibilityLabel("Active profile")
             }
         }
-        .navigationTitle(profile.name)
     }
 }

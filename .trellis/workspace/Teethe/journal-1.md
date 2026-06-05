@@ -45,3 +45,13 @@
 
 **下一步**: PR4 设置 UI（绑定行 + 录入器 + 行为 Picker + 徽章 + 增删 App）。
 
+## 2026-06-05 — PR4 设置 UI
+
+- AppModel 加 binding CRUD（add/update/remove(Set)/setBindings + didMutateProfile→active 则重注册）；视图把 onDelete/onMove 解析成调用，AppModel 保持无 SwiftUI。
+- TargetAppResolver 改 @Observable（stored 属性 @ObservationIgnored 防更新循环）+ makeTargetApp(from url)；经 environment 注入。
+- SettingsRootView：Profile 侧栏（contextMenu 设 active/改名(alert+TextField)/删）+ active 标识(bolt)。BindingsDetailView：增 App(NSOpenPanel /Applications)、排序、空状态、active toolbar。BindingRow：图标/失效/冲突徽章/录入器/行为 Picker。
+- **关键坑**：KeyboardShortcuts 2.4.0 SwiftUI Recorder 只有 Name 模式（自动注册+UserDefaults），无 binding 模式 → 自绘 `ShortcutRecorder`(NSViewRepresentable + 本地 addLocalMonitorForEvents(.keyDown) + Shortcut(event:) 解析)；保持 SoT=我方 JSON、仅 active profile 注册。Esc 取消 / Delete 清空。
+- build+test 绿(9)；`open Relay.app` smoke：启动、常驻、退出正常。
+
+**下一步**: PR5 登录启动 + Dock 图标开关 + 通用设置 + 打磨。
+

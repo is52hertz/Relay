@@ -7,11 +7,13 @@
 //
 
 import AppKit
+import Observation
 
 @MainActor
+@Observable
 final class TargetAppResolver {
-    private let workspace = NSWorkspace.shared
-    private var iconCache: [String: NSImage] = [:]
+    @ObservationIgnored private let workspace = NSWorkspace.shared
+    @ObservationIgnored private var iconCache: [String: NSImage] = [:]
 
     /// 当前安装 URL：先按 bundleId 解析，回退到仍存在的 lastKnownPath。
     func resolvedURL(for app: TargetApp) -> URL? {
@@ -40,5 +42,15 @@ final class TargetAppResolver {
         let icon = workspace.icon(forFile: path)
         iconCache[path] = icon
         return icon
+    }
+
+    /// 从用户选中的 .app bundle 构造 TargetApp（无 bundleId 则失败）。
+    func makeTargetApp(from url: URL) -> TargetApp? {
+        guard let bundle = Bundle(url: url), let bundleID = bundle.bundleIdentifier else { return nil }
+        let info = bundle.infoDictionary
+        let name = (info?["CFBundleDisplayName"] as? String)
+            ?? (info?["CFBundleName"] as? String)
+            ?? url.deletingPathExtension().lastPathComponent
+        return TargetApp(bundleIdentifier: bundleID, displayName: name, lastKnownPath: url.path)
     }
 }

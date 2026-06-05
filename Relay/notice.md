@@ -18,7 +18,7 @@ Durable handoff for the Relay macOS app. Scope: `Relay/` (Xcode project).
 - `Relay/Models/` — `FocusBehavior` / `Hotkey`(carbon码,库无关) / `TargetApp` / `HotkeyBinding` / `Profile` / `AppConfiguration`(+`AppSettings`)。皆 `nonisolated` Codable 值类型。
 - `Relay/Persistence/PersistenceStore.swift` — `@MainActor`，原子写 JSON 到 `~/Library/Application Support/cn.Teethe.Relay/config.json`。
 - `Relay/State/` — `AppModel`(`@MainActor @Observable` **SoT**；Profile CRUD + active 切换 + 去抖保存 + `hotkeysDidChange` 钩子) / `AppController`(组合根：接 model↔服务，启动/切换即重注册热键)。
-- `Relay/UI/` — `MenuBarContent`(inline Picker 切 Profile + SettingsLink + Quit)、`SettingsRootView`(NavigationSplitView 骨架 + 空状态)。
+- `Relay/UI/` — `MenuBarContent`(inline Picker 切 Profile + SettingsLink + Quit)、`SettingsRootView`(NavigationSplitView：Profile 侧栏增/改名/删/设 active + 详情)、`BindingsDetailView`(增删 App/排序/空状态/active 标识)、`BindingRow`(图标+名+失效/冲突标记+录入器+行为 Picker)、`ShortcutRecorder`(自绘录入：本地 keyDown 监听，无 AX)。
 - `Relay/Services/` — `AppActivationDecision`(纯决策, nonisolated) / `TargetAppResolver`(解析 URL/实例/图标) / `FrontmostTracker`(模型 A) / `AppActivationService`(执行层) / `Hotkey+KeyboardShortcuts`(桥接) / `HotkeyConflicts`(组内冲突, 纯) / `HotkeyRegistrationService`(active profile 注册)。
 - `RelayApp.swift` — `MenuBarExtra` + `Settings` 场景。
 
@@ -39,6 +39,7 @@ xcodebuild test -scheme Relay -only-testing:RelayTests -destination 'platform=ma
 ## 进度
 - ✅ PR1 骨架（config + models + persistence + AppModel + 菜单栏/设置壳 + 测试），build & test 绿。
 - ✅ PR2 焦点引擎：`AppActivationDecision` 纯决策（16 组合单测）+ `TargetAppResolver` + `FrontmostTracker`(模型A) + `AppActivationService` 执行层。
-- ✅ PR3 热键：KeyboardShortcuts 2.4.0 接入 + `HotkeyRegistrationService`（active profile 注册/切换）+ `HotkeyConflicts`（组内重复，2 单测）+ `AppController` 接线。build & test 绿（共 9 用例）。热键链路通；尚无录入 UI（PR4）。
-- ⏭️ PR4 设置 UI（绑定行/录入器/行为 Picker/徽章/增删 App/空错禁用态）；PR5 登录启动/Dock 开关/丢失处理/Liquid Glass 核对/可访问性。
+- ✅ PR3 热键：KeyboardShortcuts 2.4.0 接入 + `HotkeyRegistrationService`（active profile 注册/切换）+ `HotkeyConflicts`（组内重复，2 单测）+ `AppController` 接线。
+- ✅ PR4 设置 UI：Profile 侧栏(增/改名/删/设 active) + 绑定行(图标/失效/冲突徽章/自绘录入器/行为 Picker) + 增删 App(NSOpenPanel)/排序/空状态。AppModel 加 binding CRUD（视图解析 onDelete/onMove，model 仍无 SwiftUI）。**坑：KeyboardShortcuts 2.4.0 的 SwiftUI Recorder 仅 Name 模式（会自动注册）→ 自绘 `ShortcutRecorder`(本地 keyDown + `Shortcut(event:)`) 保持「仅 active profile 注册」不变式**。build+test 绿(9 用例) + 真机 smoke 启动通过。
+- ⏭️ PR5 登录启动(SMAppService)/Dock 图标开关/通用设置/丢失处理打磨/Liquid Glass 核对/可访问性收尾。
 - ⚠️ 项目级 Swift/macOS 编码 spec 尚未撰写（`.trellis/spec/*` 仍是 web 模板占位；`00-bootstrap-guidelines` 任务待办）。

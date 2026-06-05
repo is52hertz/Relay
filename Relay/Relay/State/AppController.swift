@@ -11,8 +11,8 @@ import Foundation
 @MainActor
 final class AppController {
     let model: AppModel
+    let resolver: TargetAppResolver
 
-    private let resolver: TargetAppResolver
     private let frontmost: FrontmostTracker
     private let activation: AppActivationService
     private let registration: HotkeyRegistrationService
