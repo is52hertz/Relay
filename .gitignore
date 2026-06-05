@@ -19,6 +19,7 @@ DerivedData/
 *.ipa
 *.dSYM.zip
 *.dSYM
+*.profraw
 
 # Swift Package Manager (keep Package.resolved committed for reproducible builds)
 .swiftpm/

@@ -63,12 +63,12 @@
 - FocusBehavior 类型：见 brief 5 种（待裁剪 + 定默认）。
 - Profile：增/改名/删/设 active；同 App 跨 Profile 不同快捷键；切换时注销旧注册新；菜单栏切换。
 
-## Acceptance Criteria (evolving)
-- [ ] 全局快捷键在 Relay 非前台时可触发（无需 Accessibility）。
-- [ ] 各应用状态分支行为符合所选 FocusBehavior。
-- [ ] Profile 切换后旧组快捷键注销、新组注册，无残留。
-- [ ] 组内快捷键冲突可检测并在 UI 标示。
-- [ ] UI 符合 HIG + macOS 26 Liquid Glass，支持深浅色/键盘/VoiceOver/空错禁用态。
+## Acceptance Criteria (implemented — code-complete & build/test/launch verified；带 ⚠ 者未做真机手动联调)
+- [x] 全局快捷键在 Relay 非前台时可触发（无需 Accessibility）— Carbon via KeyboardShortcuts；⚠ 未手动按键联调。
+- [x] 各应用状态分支行为符合所选 FocusBehavior — 决策层 16 组合单测覆盖；⚠ 副作用未手动联调。
+- [x] Profile 切换后旧组快捷键注销、新组注册，无残留 — `HotkeyRegistrationService.activate/deactivateAll`。
+- [x] 组内快捷键冲突可检测并在 UI 标示 — `HotkeyConflicts`(2 单测) + BindingRow 徽章；系统/他应用占用 best-effort（库不暴露）。
+- [x] UI 符合 HIG + macOS 26 Liquid Glass，支持深浅色/键盘/VoiceOver/空错禁用态 — 标准容器自动玻璃化；图标/徽章补 accessibilityLabel；空状态 ContentUnavailableView。
 
 ## Definition of Done
 - 类型检查 / build 通过（受影响 target）。
