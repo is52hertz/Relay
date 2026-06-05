@@ -21,9 +21,10 @@
   "children": [],
   "parent": null,
   "relatedFiles": [
-    ".trellis/spec/backend/",
-    ".trellis/spec/frontend/"
+    ".trellis/spec/swift/",
+    ".trellis/spec/app/",
+    ".trellis/spec/ui/"
   ],
-  "notes": "First-time setup task created by trellis init (fullstack project)",
+  "notes": "Reshaped the fullstack template into Swift/macOS layers (swift/app/ui) matching the Relay codebase.",
   "meta": {}
 }

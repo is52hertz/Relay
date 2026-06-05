@@ -19,11 +19,19 @@ the rest conversationally.
 
 ---
 
-## Status (update the checkboxes as you complete each item)
+## Status
 
-- [ ] Fill backend guidelines
-- [ ] Fill frontend guidelines
-- [ ] Add code examples
+Reshaped the generic fullstack template into Swift/macOS layers that match the real Relay
+codebase: removed `spec/backend/` and `spec/frontend/`; authored `spec/swift/`, `spec/app/`,
+`spec/ui/` (+ top `spec/index.md`). Kept `spec/guides/`. See `.trellis/spec/index.md`.
+
+The tables below (backend/frontend) are the original template and are obsolete — kept only as
+a record of what was replaced.
+
+- [x] Author Swift layer — `swift/concurrency.md`, `swift/quality.md`
+- [x] Author app layer — `app/architecture.md`, `app/system-integration.md`
+- [x] Author UI layer — `ui/swiftui.md`
+- [x] Real code examples from the Relay codebase throughout (no placeholders)
 
 ---
 

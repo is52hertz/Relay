@@ -1,0 +1,61 @@
+# Architecture & Data Flow
+
+## Layering
+
+```
+Models (pure data)
+  → Persistence (PersistenceStore: Codable JSON)
+  → State (AppModel: in-memory single source of truth)
+  → Services (resolver / activation / hotkey registration / frontmost / login / dock)
+  → UI (SwiftUI)
+AppController = composition root that wires State ↔ Services.
+```
+
+## Single source of truth
+
+`AppModel` (`@MainActor @Observable`) owns `AppConfiguration` and is the only mutable state.
+
+- `configuration` is `private(set)`. **All mutations go through `AppModel` methods**
+  (`addProfile`, `setActiveProfile`, `addBinding`, `updateBinding`, `removeBindings`,
+  `setBindings`, `settings` setter…). Never mutate config from outside.
+- The UI reads via `@Environment(AppModel.self)` and writes via explicit
+  `Binding(get:set:)` that call those methods (see ui/swiftui.md), or via small methods.
+- **`AppModel` imports only `Foundation` + `Observation` — no AppKit/SwiftUI.** This keeps it
+  unit-testable and forces side effects out through hooks.
+
+## Side effects go through hooks, wired by AppController
+
+`AppModel` exposes `@ObservationIgnored` closures, called after the relevant mutation:
+
+- `hotkeysDidChange: ((Profile?) -> Void)?` — fires when the active profile or its bindings change.
+- `settingsDidChange: ((AppSettings) -> Void)?` — fires when settings change.
+
+`AppController.init` constructs the services and the model, wires the closures
+(`model.hotkeysDidChange = { registration.activate($0) }`, etc.), then applies launch state
+(register active profile, sync Dock/login) — **guarded so it does not run under the XCTest
+host**. Services are passed by reference/injected; there are no singletons.
+
+Views never call services directly for these concerns — they mutate `AppModel`, and the hook
+fans out to the service.
+
+## Persistence (`PersistenceStore`)
+
+- JSON at `~/Library/Application Support/cn.Teethe.Relay/config.json`, atomic write,
+  pretty-printed + sorted keys. `AppModel` debounces saves (~400ms, cancellable Task) and has
+  `saveNow()`.
+- `AppConfiguration` carries `schemaVersion` for future migration.
+- **Persist stable identity, not derived/runtime data**: store `bundleIdentifier`,
+  `lastKnownPath`, Carbon key codes. Do **not** persist app icons or running state — re-derive
+  at runtime via `TargetAppResolver` / `NSWorkspace`.
+- Keep persisted formats independent of third-party libraries: `Hotkey` stores Carbon codes,
+  converted to/from `KeyboardShortcuts.Shortcut` only at the edges (`Hotkey+KeyboardShortcuts`).
+
+## Adding a feature — the path
+
+1. Add/extend a `nonisolated` model in `Models/` (+ bump `schemaVersion` if the on-disk shape
+   changes).
+2. Add a mutation method on `AppModel`; if it has a system effect, call the appropriate hook
+   (or add a new one) at the end.
+3. Wire the hook in `AppController`.
+4. Build the UI against `AppModel` (read via environment, write via `Binding`/methods).
+5. Add a pure-function test if there's decidable logic.
