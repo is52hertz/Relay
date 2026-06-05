@@ -34,7 +34,7 @@ struct BindingRow: View {
             if isConflicting {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.yellow)
-                    .help("This shortcut duplicates another in this profile; only the first is active.")
+                    .help("Duplicate shortcut: a key combination can only be used by one app per profile. The binding listed first is registered automatically; later duplicates stay inactive.")
                     .accessibilityLabel("Duplicate shortcut")
             }
 
