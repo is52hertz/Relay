@@ -32,3 +32,16 @@
 
 **下一步**: PR3 KeyboardShortcuts SPM 接入 + 注册/切换/冲突。
 
+## 2026-06-05 — PR3 热键注册 + Profile 切换
+
+- **手工把 KeyboardShortcuts(SPM) 加进 .xcodeproj**：pbxproj 5 处编辑（PBXBuildFile / Frameworks phase / target packageProductDependencies / PBXProject packageReferences / 新增 XCRemoteSwiftPackageReference + XCSwiftPackageProductDependency 两节；ID 前缀 `DEADBEEF…`）。`xcodebuild -resolvePackageDependencies` → 2.4.0 解析成功。
+- `Hotkey+KeyboardShortcuts`：Hotkey↔Shortcut(carbon 码) 互转 + displayString。
+- `HotkeyConflicts`(纯)：组内重复 binding 检测（2 单测）。
+- `HotkeyRegistrationService`：仅注册 active profile（动态 Name(binding.id)、setShortcut+enable+onKeyDown）；切换 deactivateAll(set nil/disable)；handler 每 Name 装一次读 bindingsByName；组内重复只注册第一个。
+- `AppController` 组合根接线 model.hotkeysDidChange→registration.activate；RelayApp 改用 controller。AppModel 加 `@ObservationIgnored hotkeysDidChange` 钩子保持无 AppKit 依赖。
+- 加 `.gitignore`（Xcode/SPM；保留 Package.resolved）；`git rm --cached` xcuserstate。
+- 坑：MEMBER_IMPORT_VISIBILITY 开启 → 用 UUID.uuidString 的文件需显式 `import Foundation`。
+- `xcodebuild test` 全绿（9 用例）。
+
+**下一步**: PR4 设置 UI（绑定行 + 录入器 + 行为 Picker + 徽章 + 增删 App）。
+

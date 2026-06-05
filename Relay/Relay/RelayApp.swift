@@ -7,17 +7,17 @@ import SwiftUI
 
 @main
 struct RelayApp: App {
-    @State private var model = AppModel()
+    @State private var controller = AppController()
 
     var body: some Scene {
         MenuBarExtra("Relay", systemImage: "command") {
             MenuBarContent()
-                .environment(model)
+                .environment(controller.model)
         }
 
         Settings {
             SettingsRootView()
-                .environment(model)
+                .environment(controller.model)
         }
     }
 }

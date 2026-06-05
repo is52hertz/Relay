@@ -17,6 +17,9 @@ final class AppModel {
     private let store: PersistenceStore
     private var saveTask: Task<Void, Never>?
 
+    /// active profile（或其热键）变化时通知外部重注册热键。由 AppController 注入；测试中保持 nil。
+    @ObservationIgnored var hotkeysDidChange: ((Profile?) -> Void)?
+
     init(store: PersistenceStore? = nil) {
         let resolvedStore = store ?? PersistenceStore()
         self.store = resolvedStore
@@ -40,7 +43,7 @@ final class AppModel {
         guard configuration.profiles.contains(where: { $0.id == id }) else { return }
         configuration.activeProfileID = id
         scheduleSave()
-        // TODO(PR3): activeProfile 变化 → 注销旧组、注册新组热键。
+        hotkeysDidChange?(activeProfile) // 注销旧组、注册新组热键（由 AppController 接线）。
     }
 
     // MARK: - Profile CRUD
