@@ -16,7 +16,7 @@ struct RelayApp: App {
         }
 
         Settings {
-            SettingsRootView()
+            SettingsContainer()
                 .environment(controller.model)
                 .environment(controller.resolver)
         }

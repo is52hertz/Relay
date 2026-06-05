@@ -20,6 +20,9 @@ final class AppModel {
     /// active profile（或其热键）变化时通知外部重注册热键。由 AppController 注入；测试中保持 nil。
     @ObservationIgnored var hotkeysDidChange: ((Profile?) -> Void)?
 
+    /// 设置变化时通知外部应用副作用（登录项 / Dock 策略）。由 AppController 注入；测试中保持 nil。
+    @ObservationIgnored var settingsDidChange: ((AppSettings) -> Void)?
+
     init(store: PersistenceStore? = nil) {
         let resolvedStore = store ?? PersistenceStore()
         self.store = resolvedStore
@@ -121,6 +124,7 @@ final class AppModel {
         set {
             configuration.settings = newValue
             scheduleSave()
+            settingsDidChange?(newValue)
         }
     }
 

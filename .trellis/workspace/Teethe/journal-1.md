@@ -55,3 +55,15 @@
 
 **下一步**: PR5 登录启动 + Dock 图标开关 + 通用设置 + 打磨。
 
+## 2026-06-05 — PR5 收尾（PRD 完成）
+
+- `LoginItemService`(SMAppService 幂等 register/unregister)、`DockIconController`(activationPolicy)。
+- `GeneralSettingsView`(登录启动/Dock/默认行为，写 AppModel.settings)、`SettingsContainer`(Settings 分页 Profiles+General)。RelayApp Settings 改用容器。
+- AppModel 加 `settingsDidChange` 钩子；AppController 接 loginItem/dockIcon 并启动同步。
+- **两个真崩溃修复**：
+  1. 测试宿主崩溃（SMAppService 在 XCTest 宿主）→ AppController 启动副作用用 `XCTestConfigurationFilePath` 判定跳过。
+  2. 真机启动崩溃 `DockIconController:13 nil`：AppController 在 `@State` 初始化期早于 NSApp → 改 `NSApplication.shared`（非 `NSApp`）。
+- 验证：`xcodebuild test` 绿(9)、直接跑二进制 smoke 无崩溃常驻。
+
+**状态**: PRD 全部 5 PR 完成。待办：项目级 Swift spec bootstrap；可选 finish-work。
+
