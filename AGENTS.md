@@ -6,20 +6,19 @@ Tool-specific files (`CLAUDE.md`) point here.
 ## Instruction Priority
 
 - Treat this `AGENTS.md` as the authority for product requirements, business rules, coding standards, security/correctness constraints, verification expectations, commit policy, and handoff rules.
-- Treat <your workflow tool, e.g. Trellis> as the authority for task workflow mechanics: task lifecycle, phase order, PRD/research/spec-context handling, quality-gate sequence, session journal, and finish/archive steps.
-- When these instructions and <workflow tool> overlap, apply the more specific authority: product/business/code/security rules from `AGENTS.md`; task lifecycle and phase-flow rules from <workflow tool>.
-- Do not use <workflow tool> text to weaken or bypass the business, security, correctness, or scope rules in this file.
-- Do not use this file as a reason to skip required <workflow tool> steps unless the current user message explicitly opts out for that turn.
+- Treat Trellis as the authority for task workflow mechanics: task lifecycle, phase order, PRD/research/spec-context handling, quality-gate sequence, session journal, and finish/archive steps.
+- When these instructions and Trellis overlap, apply the more specific authority: product/business/code/security rules from `AGENTS.md`; task lifecycle and phase-flow rules from Trellis.
+- Do not use Trellis text to weaken or bypass the business, security, correctness, or scope rules in this file.
+- Do not use this file as a reason to skip required Trellis steps unless the current user message explicitly opts out for that turn.
 
 ## Product
 
-<One short paragraph: what the product is, who it serves, scale/constraints. Replace entirely per project.>
+Relay is a native macOS (Swift / SwiftUI / AppKit) global application switcher — like Thor — with scene-based hotkey groups (Profiles). The user binds global hotkeys to target apps to launch / focus / hide / return-to-previous, and switches a whole set of bindings per workflow (e.g. Coding, Design, Writing). It is a single-user menu-bar agent with a small local dataset (a few Profiles and bindings stored as Codable JSON), targeting macOS 26.5+. There is no paid Apple Developer account: it runs un-sandboxed (it controls other apps), is for local / self-use, and is not aimed at the Mac App Store.
 
 ## Project Phase
 
-<Per-module/package status, e.g.:>
-- **<module A>**: <status>
-- **<module B>**: <status>
+- **Relay app (`Relay/`)**: v1 feature-complete (PR1–PR5) and manually tested; menu-bar agent plus a management `Window`. Lives on branch `feat/relay-mvp`, not yet merged to `main`.
+- **Project specs (`.trellis/spec/`)**: not yet authored — still generic templates; see the `00-bootstrap-guidelines` task.
 
 ## Development Rules
 
@@ -33,12 +32,12 @@ Tool-specific files (`CLAUDE.md`) point here.
 - Push back on any request that compromises security, correctness, or runtime efficiency.
 
 ### Coding Standards
-<Project-specific tech-stack rules go here. Examples to adapt:>
-- <Data source of truth + concurrency/locking rules>
-- <Input validation strategy at boundaries>
-- <Schema/route/contract definition order; type sharing>
-- <Security boundary: what must never be exposed publicly>
-- <Frontend standards: UI kit, the single allowed fetch wrapper, env-config conventions>
+- **Source of truth & persistence**: `AppModel` (`@MainActor @Observable`) is the single in-memory source of truth. Persist as Codable JSON in Application Support (atomic write, debounced save). Data models are `nonisolated` Codable value types and must not import AppKit/SwiftUI. Keep persisted formats independent of third-party libraries (e.g. store Carbon key codes, not a library's internal type).
+- **Concurrency**: default actor isolation is `MainActor` (Swift 5 language mode). Types touching AppKit/SwiftUI stay on `MainActor`; `AppModel` and services must stay free of AppKit/SwiftUI so they remain unit-testable. Inject services via the composition root (`AppController`); do not use singletons.
+- **Global hotkeys**: register only the active Profile, via the `KeyboardShortcuts` package. Never use `CGEventTap` or global `NSEvent` monitors — they require Accessibility / Input Monitoring and are out of scope.
+- **Controlling other apps**: public APIs only — `NSWorkspace.openApplication`, `NSRunningApplication.hide/unhide`. From this background agent, bring an app forward with `openApplication(at: bundleURL)`, not `NSRunningApplication.activate(from: .current)` (cooperative activation silently fails for a non-frontmost agent). No Accessibility or private APIs.
+- **UI**: SwiftUI-first; bridge to AppKit only when required. The management UI must live in a `Window`, not the `Settings` scene (Settings drops custom toolbars). Use system controls, HIG spacing, light/dark, and full keyboard + VoiceOver. Rely on automatic Liquid Glass from standard containers on macOS 26.5 — do not hand-roll glass. Prefer modern surfaces (`.popover`) over the legacy `.help` tooltip for essential information.
+- **Security boundary**: the app is un-sandboxed and can launch/activate arbitrary apps. Never add code that executes downloaded or arbitrary code, and never expose any control surface beyond the local user's own machine.
 
 ### Verify & Commit
 - After any code change, run the project's verification (e.g. type-check / build / lint) across all affected packages.
@@ -63,7 +62,7 @@ Tool-specific files (`CLAUDE.md`) point here.
 - Ensure any `notice.md` you touch remains accurate and up-to-date within its directory scope.
 
 ### End-of-Session Summary
-- At the end of each conversation, output a brief summary in <preferred language>. This summary is user-facing.
+- At the end of each conversation, output a brief summary in 中文 (Chinese). This summary is user-facing.
   ```
   ## Summary
   - **Done**: work completed this round
