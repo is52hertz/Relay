@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/keyboardshortcuts.md", "reason": "核对：SoT 是否在我方 JSON、是否未双写 UserDefaults、注册仅 active profile、组内冲突自算、未臆造注册失败 API"}
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/cross-app-activation.md", "reason": "核对：用公开 API（无 AX/私有）、FocusBehavior 矩阵与状态判定一致、模型 A 排除自身、无窗兜底符合 P1-8"}
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/liquid-glass-macos26.md", "reason": "核对：未臆造 Liquid Glass API、v1 依赖自动采用、深浅色/VoiceOver/键盘可达"}
