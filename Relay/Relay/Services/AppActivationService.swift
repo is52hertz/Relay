@@ -77,9 +77,21 @@ final class AppActivationService {
     private func returnToPrevious(from app: TargetApp) {
         if let previous = frontmost.previousApp,
            previous.bundleIdentifier != app.bundleIdentifier {
-            previous.activate(from: .current)
+            bringRunningAppToFront(previous)
         } else {
             hideTarget(app)
+        }
+    }
+
+    /// 把一个正在运行的 App 拉到前台。用 openApplication（与 launch/focus 同路径，可靠）——
+    /// 而非 `activate(from: .current)`：Relay 是后台 agent、非前台，协作式激活会静默失败。
+    private func bringRunningAppToFront(_ runningApp: NSRunningApplication) {
+        if let url = runningApp.bundleURL {
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = true
+            workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+        } else {
+            runningApp.activate()
         }
     }
 }

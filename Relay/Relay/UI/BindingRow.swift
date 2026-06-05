@@ -46,6 +46,11 @@ struct BindingRow: View {
         .padding(.vertical, 4)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(binding.app.displayName)
+        .contextMenu {
+            Button("Remove", role: .destructive) {
+                model.removeBindings([binding.id], from: profileID)
+            }
+        }
     }
 
     @ViewBuilder private var icon: some View {

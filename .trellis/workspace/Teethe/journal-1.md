@@ -67,3 +67,12 @@
 
 **状态**: PRD 全部 5 PR 完成。待办：项目级 Swift spec bootstrap；可选 finish-work。
 
+## 2026-06-05 — 手测第一轮修复
+
+用户真机手测报告，定位到两个根因 + 几个小修：
+- **根因 1：管理 UI 放在 `Settings` 场景** → Settings 不支持自定义 toolbar（Add App/Profile、Set as Active 全失效）、切激活策略时窗口异常。**改为真正的 `Window`(id main) + `.defaultLaunchBehavior(.suppressed)`**；菜单栏「Open Relay…」openWindow+activate。修复 1.2/4.1–4.6/5.x/7.2/8.4 一连串。
+- **根因 2：Return to Previous 用 `activate(from: .current)`** → agent 非前台时协作激活静默失败（3.3/3.4 切不回）。**改用 `openApplication(at: previous.bundleURL)`**（与 launch/focus 同路径）。
+- 小修：BindingRow 右键 Remove（1.3）；菜单栏 active Profile 显式 checkmark（0.2）；DockIconController 切策略后 `activate()` 防窗口隐藏（7.1）。
+- 澄清：1.5 改名仍识别=正确（bundleId 不变）；6.2 是 shell 引号假报（路径含空格）。
+- build+test 绿(9) + smoke 启动正常。待用户复测。
+

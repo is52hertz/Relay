@@ -30,6 +30,8 @@ Durable handoff for the Relay macOS app. Scope: `Relay/` (Xcode project).
 - 默认参数不能调用 @MainActor 初始化器（默认实参是 nonisolated 上下文）；构造放进 init body。
 - **AppController 在 `@State` 初始化期运行（早于 NSApp 建立）**：用 `NSApplication.shared`（非 `NSApp`，后者此时为 nil 会崩）；登录项/Dock/注册等系统副作用在 XCTest 宿主下跳过（`XCTestConfigurationFilePath` 判定），否则测试宿主 App 崩溃。
 - 登录启动（SMAppService）在无正式签名/非 /Applications 运行时可能不持久——已知限制，失败仅 NSLog。
+- **管理 UI 用 `Window`(id `main`) 而非 `Settings` 场景**：Settings 窗口不支持自定义 `.toolbar` 按钮（Add App/Profile、Set as Active 会失效）、且切激活策略时窗口异常。菜单栏「Open Relay…」→ `openWindow` + `NSApplication.shared.activate()`；`.defaultLaunchBehavior(.suppressed)` 防 agent 启动弹窗。
+- **跨 App 激活一律用 `NSWorkspace.openApplication(at: bundleURL)`，不要用 `NSRunningApplication.activate(from: .current)`**：Relay 是后台 agent、非前台，协作式激活会静默失败（Return to Previous 曾因此切不回去）。
 
 ## 验证命令
 ```bash
