@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 0
-- **Last Active**: -
+- **Total Sessions**: 1
+- **Last Active**: 2026-06-05
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~0 | Active |
+| `journal-1.md` | ~134 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 1 | 2026-06-05 | Relay v1 — 类 Thor 全局应用快捷切换器（PR1–PR5 + 两轮手测修复） | `a7576a4`, `5e57290`, `b4bed56`, `ab09602`, `999888d`, `72cdb8f`, `8887af4`, `6ab4a49`, `b671a01`, `4545e5d`, `f9c0876`, `ab84607`, `dfe4fea` | `feat/relay-mvp` |
 <!-- @@@/auto:session-history -->
 
 ---

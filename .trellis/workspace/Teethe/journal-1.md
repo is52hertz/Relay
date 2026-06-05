@@ -87,3 +87,48 @@
 
 **状态**: 功能全绿，准备 finish-work。
 
+
+
+## Session 1: Relay v1 — 类 Thor 全局应用快捷切换器（PR1–PR5 + 两轮手测修复）
+
+**Date**: 2026-06-05
+**Task**: Relay v1 — 类 Thor 全局应用快捷切换器（PR1–PR5 + 两轮手测修复）
+**Branch**: `feat/relay-mvp`
+
+### Summary
+
+需求审计→PRD/ADR→分5个PR实现：模型/持久化/AppModel(SoT)、焦点引擎(纯决策+模型A FrontmostTracker)、KeyboardShortcuts接入+按active profile注册+组内冲突、设置UI(自绘录入器)、登录启动/Dock/通用设置。两轮真机手测修复：管理UI移到Window(Settings不支持toolbar)、Return-to-Previous改openApplication、录制时停用全局热键、冲突提示改即时popover。全程build+RelayTests(9)绿。沙箱关、agent(LSUIElement)、目标macOS26.5、无付费账号本机自用。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a7576a4` | (see git log) |
+| `5e57290` | (see git log) |
+| `b4bed56` | (see git log) |
+| `ab09602` | (see git log) |
+| `999888d` | (see git log) |
+| `72cdb8f` | (see git log) |
+| `8887af4` | (see git log) |
+| `6ab4a49` | (see git log) |
+| `b671a01` | (see git log) |
+| `4545e5d` | (see git log) |
+| `f9c0876` | (see git log) |
+| `ab84607` | (see git log) |
+| `dfe4fea` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
