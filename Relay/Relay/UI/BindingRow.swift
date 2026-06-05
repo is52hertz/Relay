@@ -16,6 +16,7 @@ struct BindingRow: View {
 
     @Environment(AppModel.self) private var model
     @Environment(TargetAppResolver.self) private var resolver
+    @State private var showConflictInfo = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -32,10 +33,16 @@ struct BindingRow: View {
             Spacer(minLength: 12)
 
             if isConflicting {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.yellow)
-                    .help("Duplicate shortcut: a key combination can only be used by one app per profile. The binding listed first is registered automatically; later duplicates stay inactive.")
-                    .accessibilityLabel("Duplicate shortcut")
+                Button {
+                    showConflictInfo.toggle()
+                } label: {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                }
+                .buttonStyle(.plain)
+                .onHover { hovering in if hovering { showConflictInfo = true } }
+                .popover(isPresented: $showConflictInfo) { conflictInfoCard }
+                .accessibilityLabel("Duplicate shortcut")
             }
 
             ShortcutRecorder(hotkey: hotkeyBinding)
@@ -61,6 +68,20 @@ struct BindingRow: View {
                 .resizable().frame(width: 28, height: 28)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private var conflictInfoCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Duplicate shortcut", systemImage: "exclamationmark.triangle.fill")
+                .font(.headline)
+                .foregroundStyle(.orange)
+            Text("A key combination can only be used by one app per profile. The binding listed first is registered automatically; later duplicates stay inactive.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(width: 280)
     }
 
     private var behaviorPicker: some View {
