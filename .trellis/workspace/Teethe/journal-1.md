@@ -132,3 +132,38 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: AGENTS.md 补全 + .trellis/spec 重塑为 Swift/macOS 规范
+
+**Date**: 2026-06-05
+**Task**: AGENTS.md 补全 + .trellis/spec 重塑为 Swift/macOS 规范
+**Branch**: `feat/relay-mvp`
+
+### Summary
+
+补全 AGENTS.md 的 Product/Project Phase/Coding Standards/Trellis 占位（summary 语言设为中文）。完成 00-bootstrap-guidelines：把 .trellis/spec 从 web 模板(backend/frontend)重塑为贴合 Relay 真实代码的 Swift 层 swift/app/ui（+顶层 index，保留 guides），规则全部 source-backed、无占位。提交 codex 配置更新。推送 main 与 feat/relay-mvp 到 origin。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `77134d0` | (see git log) |
+| `c03d9b0` | (see git log) |
+| `b59d19d` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
