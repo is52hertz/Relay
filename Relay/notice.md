@@ -32,6 +32,7 @@ Durable handoff for the Relay macOS app. Scope: `Relay/` (Xcode project).
 - 登录启动（SMAppService）在无正式签名/非 /Applications 运行时可能不持久——已知限制，失败仅 NSLog。
 - **管理 UI 用 `Window`(id `main`) 而非 `Settings` 场景**：Settings 窗口不支持自定义 `.toolbar` 按钮（Add App/Profile、Set as Active 会失效）、且切激活策略时窗口异常。菜单栏「Open Relay…」→ `openWindow` + `NSApplication.shared.activate()`；`.defaultLaunchBehavior(.suppressed)` 防 agent 启动弹窗。
 - **跨 App 激活一律用 `NSWorkspace.openApplication(at: bundleURL)`，不要用 `NSRunningApplication.activate(from: .current)`**：Relay 是后台 agent、非前台，协作式激活会静默失败（Return to Previous 曾因此切不回去）。
+- **`ShortcutRecorder` 录制期间设 `KeyboardShortcuts.isEnabled=false`，stop()/dismantle 恢复 true**：否则按下的组合会被已注册的全局热键截走、触发别的 App，录不进来（也使「录入重复组合 → 触发组内冲突 Warn」成为可能）。
 
 ## 验证命令
 ```bash

@@ -32,6 +32,11 @@ struct ShortcutRecorder: NSViewRepresentable {
         }
     }
 
+    static func dismantleNSView(_ nsView: NSButton, coordinator: Coordinator) {
+        // 视图在录制中被销毁时，确保恢复全局热键（否则会一直停用）。
+        coordinator.cancelIfRecording()
+    }
+
     @MainActor
     final class Coordinator: NSObject {
         var parent: ShortcutRecorder
@@ -49,6 +54,8 @@ struct ShortcutRecorder: NSViewRepresentable {
 
         private func start() {
             isRecording = true
+            // 录制期间停用全局热键，否则按下的组合会被已注册的热键截走（触发别的 App），录不进来。
+            KeyboardShortcuts.isEnabled = false
             button?.title = "Type shortcut…"
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
                 MainActor.assumeIsolated {
@@ -62,7 +69,12 @@ struct ShortcutRecorder: NSViewRepresentable {
             isRecording = false
             if let monitor { NSEvent.removeMonitor(monitor) }
             monitor = nil
+            KeyboardShortcuts.isEnabled = true   // 恢复全局热键
             refreshTitle()
+        }
+
+        func cancelIfRecording() {
+            if isRecording { stop() }
         }
 
         /// 返回是否消费该事件。

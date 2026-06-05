@@ -76,3 +76,14 @@
 - 澄清：1.5 改名仍识别=正确（bundleId 不变）；6.2 是 shell 引号假报（路径含空格）。
 - build+test 绿(9) + smoke 启动正常。待用户复测。
 
+## 2026-06-05 — 手测第二轮（32/36 过）+ 录入器修复
+
+复测：核心全过（Return to Previous、Profile 切换、Dock 等）。剩余：
+- 用户指出真痛点：**录制时按下组合会触发已注册的全局热键（启动别的 App）**，导致重复组合根本录不进、连带冲突 Warn 不可达。
+- 修：`ShortcutRecorder` 录制期间 `KeyboardShortcuts.isEnabled=false`，stop()/dismantleNSView 恢复 true。
+- 决策：保留冲突 Warn（修好录入器后重复组合可录入 → 第二个静默跳过，Warn 是唯一提示）。[user 同意修录入器；Warn 去留待最终拍板，暂留]
+- 6.2 仍是 shell tilde-in-quotes 假报（配置确在 ~/Library/Application Support/cn.Teethe.Relay/config.json）。
+- build+test 绿(9) + smoke 正常。
+
+**状态**: 功能全绿，准备 finish-work。
+
