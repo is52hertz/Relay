@@ -20,3 +20,15 @@
 **下一步**: PR2 焦点引擎 + FrontmostTracker。
 **遗留**: 项目级 Swift spec 未写（`.trellis/spec` 仍 web 占位）。
 
+## 2026-06-05 — PR2 焦点引擎
+
+主会话直接实现（未派 sub-agent：harness 限制冷启动 spawn，且主会话已持全量 PR1 上下文；已向用户说明可改回 Trellis sub-agent 流）。
+
+- `AppActivationDecision`(nonisolated 纯决策)：运行态合并 notInstalled/notRunning/running/frontmost；decision = state × FocusBehavior（与 PRD 矩阵一致）。
+- `TargetAppResolver`：bundleId→URL 回退 path、运行实例、图标(按 path 缓存)。
+- `FrontmostTracker`(模型 A)：didActivateApplicationNotification 维护 (current,previous)、排除自身、main 队列 + assumeIsolated。
+- `AppActivationService`：runtimeState 判定 + perform；launch/focus 统一 `bringToFront`(unhide+openApplication 兜底无窗)；returnToPrevious 无 previous→hide；activate(from:.current) 协作式激活。
+- 测试：`AppActivationDecisionTests` 覆盖 16 组合。`xcodebuild test` 全绿（7 用例）。
+
+**下一步**: PR3 KeyboardShortcuts SPM 接入 + 注册/切换/冲突。
+
