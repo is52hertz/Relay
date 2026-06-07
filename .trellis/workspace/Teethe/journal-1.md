@@ -167,3 +167,39 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: PR#1 审查修复 + Codex 独立验证
+
+**Date**: 2026-06-07
+**Task**: PR#1 审查修复 + Codex 独立验证
+**Branch**: `feat/relay-mvp`
+
+### Summary
+
+修复 PR#1 四条 P2 审查意见：(1) AppController 监听 willTerminate 调 saveNow 退出前 flush 去抖保存；(2) bringRunningAppToFront 改 bundleURL/bundleID 解析 + openApplication，移除 agent 下静默失败的 activate() 兜底；(3) returnToPrevious 加 !isTerminated，previous 已退出退化为 hideTarget；(4) ShortcutRecorder 监听 didResignActive，录制中切走即取消并恢复 KeyboardShortcuts.isEnabled。逐条回复 PR 评论并推送。Codex gpt-5.5 xhigh 独立验证：0 blocker/0 should-fix，2 nit；采纳 nit 1（bringRunningAppToFront 返回 Bool + 再判 isTerminated，URL 解析失败也退化 hideTarget），跳过 nit 2（冗余/外观）。构建与 RelayTests 全绿。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `df81339` | (see git log) |
+| `f0569c3` | (see git log) |
+| `0eec022` | (see git log) |
+| `d819bd9` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
