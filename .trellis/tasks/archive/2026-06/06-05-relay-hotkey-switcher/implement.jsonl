@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/keyboardshortcuts.md", "reason": "KeyboardShortcuts 确切 API + Relay 集成决策（Hotkey↔Shortcut、动态 Name、active-profile 注册、SoT=我方 JSON、冲突检测范围）"}
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/cross-app-activation.md", "reason": "焦点引擎所需 AppKit 公开 API：状态判定、activate(from:)/hide/unhide、openApplication/reopen、FrontmostTracker(模型A)、图标解析"}
+{"file": ".trellis/tasks/06-05-relay-hotkey-switcher/research/liquid-glass-macos26.md", "reason": "UI 玻璃化策略：26.5 自动采用、v1 不手抹玻璃、确认存在的公开 API 与可访问性/深浅色"}
