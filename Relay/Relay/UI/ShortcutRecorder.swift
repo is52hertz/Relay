@@ -43,6 +43,7 @@ struct ShortcutRecorder: NSViewRepresentable {
         weak var button: NSButton?
         private(set) var isRecording = false
         private var monitor: Any?
+        private var resignObserver: Any?
 
         init(_ parent: ShortcutRecorder) {
             self.parent = parent
@@ -63,12 +64,25 @@ struct ShortcutRecorder: NSViewRepresentable {
                     return self.handle(event) ? nil : event
                 }
             }
+            // local monitor 仅在 App 前台时收事件；用户不按键就切走会让录制卡死、
+            // 全局热键一直停用。App 一失去前台即取消录制并恢复 isEnabled。
+            resignObserver = NotificationCenter.default.addObserver(
+                forName: NSApplication.didResignActiveNotification,
+                object: nil,
+                queue: nil
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.cancelIfRecording()
+                }
+            }
         }
 
         private func stop() {
             isRecording = false
             if let monitor { NSEvent.removeMonitor(monitor) }
             monitor = nil
+            if let resignObserver { NotificationCenter.default.removeObserver(resignObserver) }
+            resignObserver = nil
             KeyboardShortcuts.isEnabled = true   // 恢复全局热键
             refreshTitle()
         }
@@ -101,6 +115,7 @@ struct ShortcutRecorder: NSViewRepresentable {
 
         deinit {
             if let monitor { NSEvent.removeMonitor(monitor) }
+            if let resignObserver { NotificationCenter.default.removeObserver(resignObserver) }
         }
     }
 }
