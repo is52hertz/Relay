@@ -73,9 +73,12 @@ final class AppActivationService {
         }
     }
 
-    /// 切回上一个 App；无 previous（或 previous 即目标）时退化为隐藏目标。
+    /// 切回上一个 App；previous 为空 / 已退出 / 即目标时退化为隐藏目标（PRD 锁定边界）。
+    /// `isTerminated` 判定必要：FrontmostTracker 不监听 didTerminate，previous 可能已退出，
+    /// 若直接交给 bringRunningAppToFront 会被其 URL 兜底重新拉起，违反「退出→hide 目标」。
     private func returnToPrevious(from app: TargetApp) {
         if let previous = frontmost.previousApp,
+           !previous.isTerminated,
            previous.bundleIdentifier != app.bundleIdentifier {
             bringRunningAppToFront(previous)
         } else {
