@@ -83,15 +83,16 @@ final class AppActivationService {
         }
     }
 
-    /// 把一个正在运行的 App 拉到前台。用 openApplication（与 launch/focus 同路径，可靠）——
+    /// 把一个正在运行的 App 拉到前台。统一走 openApplication（与 launch/focus 同路径，可靠）——
     /// 而非 `activate(from: .current)`：Relay 是后台 agent、非前台，协作式激活会静默失败。
+    /// URL 解析：优先 bundleURL，回退按 bundleIdentifier 解析；都拿不到则放弃（不退化为 activate()，
+    /// 后者对 agent 同样静默失败，并非真实兜底）。
     private func bringRunningAppToFront(_ runningApp: NSRunningApplication) {
-        if let url = runningApp.bundleURL {
-            let configuration = NSWorkspace.OpenConfiguration()
-            configuration.activates = true
-            workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
-        } else {
-            runningApp.activate()
-        }
+        let url = runningApp.bundleURL
+            ?? runningApp.bundleIdentifier.flatMap { workspace.urlForApplication(withBundleIdentifier: $0) }
+        guard let url else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
     }
 }

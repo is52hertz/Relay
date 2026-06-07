@@ -6,6 +6,7 @@
 //  让 AppModel 保持无 AppKit/第三方依赖、可单测；副作用集中在此。
 //
 
+import AppKit
 import Foundation
 
 @MainActor
@@ -18,6 +19,7 @@ final class AppController {
     private let registration: HotkeyRegistrationService
     private let loginItem: LoginItemService
     private let dockIcon: DockIconController
+    private var terminateObserver: NSObjectProtocol?
 
     init() {
         let resolver = TargetAppResolver()
@@ -50,6 +52,29 @@ final class AppController {
             registration.activate(model.activeProfile)
             dockIcon.setDockIconVisible(model.settings.showDockIcon)
             loginItem.setEnabled(model.settings.launchAtLogin)
+            observeTermination()
+        }
+    }
+
+    /// 退出前同步 flush 去抖保存，避免「改完即退」丢失最后一次配置变更。
+    /// 覆盖全部正常退出路径（菜单 Quit、Window 聚焦时的标准 ⌘Q、注销/重启）；
+    /// 强制退出/SIGKILL/崩溃无法覆盖。queue: nil → 回调在 willTerminate 的发帖线程（主线程）
+    /// 同步执行，保证 saveNow() 在 exit 前完成。
+    private func observeTermination() {
+        terminateObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification,
+            object: nil,
+            queue: nil
+        ) { [model] _ in
+            MainActor.assumeIsolated {
+                model.saveNow()
+            }
+        }
+    }
+
+    deinit {
+        if let terminateObserver {
+            NotificationCenter.default.removeObserver(terminateObserver)
         }
     }
 
