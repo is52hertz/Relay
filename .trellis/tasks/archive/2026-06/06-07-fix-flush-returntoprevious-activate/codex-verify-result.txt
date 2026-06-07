@@ -1,0 +1,25 @@
+**Findings**
+- **blocker**: none
+- **should-fix**: none
+- **nit**: `AppActivationService.returnToPrevious` 只在进入 helper 前检查一次 `previous.isTerminated`。如果 previous 在 [AppActivationService.swift](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/Services/AppActivationService.swift:80) 通过检查后、[openApplication](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/Services/AppActivationService.swift:99) 前退出，仍可能被 URL 路径重新启动。这是极窄 TOCTOU，不算当前修复失败；更稳妥是让 `bringRunningAppToFront` 内部再 guard `!runningApp.isTerminated`，并返回 `Bool`，失败时由 `returnToPrevious` 退化 `hideTarget(app)`。
+- **nit**: 两个 `MainActor.assumeIsolated` 都依赖 AppKit 通知确实在主线程同步投递；生产路径成立，但 [AppController.swift](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/State/AppController.swift:64) 和 [ShortcutRecorder.swift](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/UI/ShortcutRecorder.swift:69) 使用 `object: nil` 范围偏宽。可改为 `object: NSApplication.shared`，并在 closure 内加 `precondition(Thread.isMainThread)` 作为可审计断言。
+
+**逐项结论**
+1. **修复1 退出 flush**: ✅通过  
+   [AppController.swift](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/State/AppController.swift:51) 仅非测试注册；[willTerminate observer](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/State/AppController.swift:63) 用 `queue: nil` 同步执行；[saveNow](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/State/AppModel.swift:144) 会取消去抖任务并同步写当前 configuration。没有 retain cycle：closure 捕获 `model`，不捕获 controller；deinit 移除 token。
+
+2. **修复2 移除 `activate()` 兜底**: ✅通过  
+   [bringRunningAppToFront](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/Services/AppActivationService.swift:93) 现在只走 `bundleURL` 或 bundle id 解析 URL 后的 `openApplication`，符合 PRD “后台 agent 不用 `NSRunningApplication.activate(from:)`”。解析不到直接 return，符合这次锁定描述。
+
+3. **修复3 previous 已退出退化 hide**: ✅通过，带上面 TOCTOU nit  
+   [returnToPrevious](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/Services/AppActivationService.swift:80) 加了 `!previous.isTerminated`，所以 “previous 已退出/为空/即目标” 会进入 [hideTarget](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/Services/AppActivationService.swift:85)，不会因 URL 兜底重新拉起已退出 previous。PRD 边界满足。
+
+4. **修复4 录制中切走取消**: ✅通过  
+   [start](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/UI/ShortcutRecorder.swift:56) 禁用全局热键后注册 `didResignActive`；[closure](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/UI/ShortcutRecorder.swift:73) weak self，无 retain cycle；[stop](/Users/is52hertz/Documents/Projects/Hotkey/Relay/Relay/UI/ShortcutRecorder.swift:80) 同时移除 monitor/observer 并恢复 `KeyboardShortcuts.isEnabled`。重复移除被 `nil` 化避免，deinit 兜底移除 observer。切到别的 App 即取消录制的 UX 符合边界。
+
+## Summary
+- **Done**: 已只读审查 `codex-verify.diff` 与相关源码，四处修复均通过；未修改文件。
+- **Key decisions**: [self] 将 TOCTOU 和 observer 作用域列为 nit，不阻塞合入；核心 PRD 行为已满足。
+- **Commits**: 本轮无提交；未跟踪的验证材料文件未处理。
+- **Open/known risks**: 缺少这些副作用路径的自动化覆盖；`returnToPrevious` 仍有极窄退出竞态。
+- **Suggested next steps**: 1. 给 `bringRunningAppToFront` 加内部 `isTerminated` guard/Bool 返回。2. observer 改 `object: NSApplication.shared` 并加主线程断言。3. 未来抽象 workspace/activation seam 后补服务层测试。

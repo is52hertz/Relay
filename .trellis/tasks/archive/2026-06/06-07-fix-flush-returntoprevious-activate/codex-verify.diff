@@ -1,0 +1,139 @@
+diff --git a/Relay/Relay/Services/AppActivationService.swift b/Relay/Relay/Services/AppActivationService.swift
+index f9cf8b6..3667919 100644
+--- a/Relay/Relay/Services/AppActivationService.swift
++++ b/Relay/Relay/Services/AppActivationService.swift
+@@ -73,9 +73,12 @@ final class AppActivationService {
+         }
+     }
+ 
+-    /// 切回上一个 App；无 previous（或 previous 即目标）时退化为隐藏目标。
++    /// 切回上一个 App；previous 为空 / 已退出 / 即目标时退化为隐藏目标（PRD 锁定边界）。
++    /// `isTerminated` 判定必要：FrontmostTracker 不监听 didTerminate，previous 可能已退出，
++    /// 若直接交给 bringRunningAppToFront 会被其 URL 兜底重新拉起，违反「退出→hide 目标」。
+     private func returnToPrevious(from app: TargetApp) {
+         if let previous = frontmost.previousApp,
++           !previous.isTerminated,
+            previous.bundleIdentifier != app.bundleIdentifier {
+             bringRunningAppToFront(previous)
+         } else {
+@@ -83,15 +86,16 @@ final class AppActivationService {
+         }
+     }
+ 
+-    /// 把一个正在运行的 App 拉到前台。用 openApplication（与 launch/focus 同路径，可靠）——
++    /// 把一个正在运行的 App 拉到前台。统一走 openApplication（与 launch/focus 同路径，可靠）——
+     /// 而非 `activate(from: .current)`：Relay 是后台 agent、非前台，协作式激活会静默失败。
++    /// URL 解析：优先 bundleURL，回退按 bundleIdentifier 解析；都拿不到则放弃（不退化为 activate()，
++    /// 后者对 agent 同样静默失败，并非真实兜底）。
+     private func bringRunningAppToFront(_ runningApp: NSRunningApplication) {
+-        if let url = runningApp.bundleURL {
+-            let configuration = NSWorkspace.OpenConfiguration()
+-            configuration.activates = true
+-            workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+-        } else {
+-            runningApp.activate()
+-        }
++        let url = runningApp.bundleURL
++            ?? runningApp.bundleIdentifier.flatMap { workspace.urlForApplication(withBundleIdentifier: $0) }
++        guard let url else { return }
++        let configuration = NSWorkspace.OpenConfiguration()
++        configuration.activates = true
++        workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+     }
+ }
+diff --git a/Relay/Relay/State/AppController.swift b/Relay/Relay/State/AppController.swift
+index 5d49426..916982d 100644
+--- a/Relay/Relay/State/AppController.swift
++++ b/Relay/Relay/State/AppController.swift
+@@ -6,6 +6,7 @@
+ //  让 AppModel 保持无 AppKit/第三方依赖、可单测；副作用集中在此。
+ //
+ 
++import AppKit
+ import Foundation
+ 
+ @MainActor
+@@ -18,6 +19,7 @@ final class AppController {
+     private let registration: HotkeyRegistrationService
+     private let loginItem: LoginItemService
+     private let dockIcon: DockIconController
++    private var terminateObserver: NSObjectProtocol?
+ 
+     init() {
+         let resolver = TargetAppResolver()
+@@ -50,6 +52,29 @@ final class AppController {
+             registration.activate(model.activeProfile)
+             dockIcon.setDockIconVisible(model.settings.showDockIcon)
+             loginItem.setEnabled(model.settings.launchAtLogin)
++            observeTermination()
++        }
++    }
++
++    /// 退出前同步 flush 去抖保存，避免「改完即退」丢失最后一次配置变更。
++    /// 覆盖全部正常退出路径（菜单 Quit、Window 聚焦时的标准 ⌘Q、注销/重启）；
++    /// 强制退出/SIGKILL/崩溃无法覆盖。queue: nil → 回调在 willTerminate 的发帖线程（主线程）
++    /// 同步执行，保证 saveNow() 在 exit 前完成。
++    private func observeTermination() {
++        terminateObserver = NotificationCenter.default.addObserver(
++            forName: NSApplication.willTerminateNotification,
++            object: nil,
++            queue: nil
++        ) { [model] _ in
++            MainActor.assumeIsolated {
++                model.saveNow()
++            }
++        }
++    }
++
++    deinit {
++        if let terminateObserver {
++            NotificationCenter.default.removeObserver(terminateObserver)
+         }
+     }
+ 
+diff --git a/Relay/Relay/UI/ShortcutRecorder.swift b/Relay/Relay/UI/ShortcutRecorder.swift
+index 987caaf..dc76972 100644
+--- a/Relay/Relay/UI/ShortcutRecorder.swift
++++ b/Relay/Relay/UI/ShortcutRecorder.swift
+@@ -43,6 +43,7 @@ struct ShortcutRecorder: NSViewRepresentable {
+         weak var button: NSButton?
+         private(set) var isRecording = false
+         private var monitor: Any?
++        private var resignObserver: Any?
+ 
+         init(_ parent: ShortcutRecorder) {
+             self.parent = parent
+@@ -63,12 +64,25 @@ struct ShortcutRecorder: NSViewRepresentable {
+                     return self.handle(event) ? nil : event
+                 }
+             }
++            // local monitor 仅在 App 前台时收事件；用户不按键就切走会让录制卡死、
++            // 全局热键一直停用。App 一失去前台即取消录制并恢复 isEnabled。
++            resignObserver = NotificationCenter.default.addObserver(
++                forName: NSApplication.didResignActiveNotification,
++                object: nil,
++                queue: nil
++            ) { [weak self] _ in
++                MainActor.assumeIsolated {
++                    self?.cancelIfRecording()
++                }
++            }
+         }
+ 
+         private func stop() {
+             isRecording = false
+             if let monitor { NSEvent.removeMonitor(monitor) }
+             monitor = nil
++            if let resignObserver { NotificationCenter.default.removeObserver(resignObserver) }
++            resignObserver = nil
+             KeyboardShortcuts.isEnabled = true   // 恢复全局热键
+             refreshTitle()
+         }
+@@ -101,6 +115,7 @@ struct ShortcutRecorder: NSViewRepresentable {
+ 
+         deinit {
+             if let monitor { NSEvent.removeMonitor(monitor) }
++            if let resignObserver { NotificationCenter.default.removeObserver(resignObserver) }
+         }
+     }
+ }
