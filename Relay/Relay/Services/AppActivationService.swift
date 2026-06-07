@@ -73,29 +73,33 @@ final class AppActivationService {
         }
     }
 
-    /// 切回上一个 App；previous 为空 / 已退出 / 即目标时退化为隐藏目标（PRD 锁定边界）。
+    /// 切回上一个 App；previous 为空 / 已退出 / 即目标 / 无法拉前时退化为隐藏目标（PRD 锁定边界）。
     /// `isTerminated` 判定必要：FrontmostTracker 不监听 didTerminate，previous 可能已退出，
     /// 若直接交给 bringRunningAppToFront 会被其 URL 兜底重新拉起，违反「退出→hide 目标」。
     private func returnToPrevious(from app: TargetApp) {
-        if let previous = frontmost.previousApp,
-           !previous.isTerminated,
-           previous.bundleIdentifier != app.bundleIdentifier {
-            bringRunningAppToFront(previous)
-        } else {
+        guard let previous = frontmost.previousApp,
+              previous.bundleIdentifier != app.bundleIdentifier,
+              bringRunningAppToFront(previous)
+        else {
             hideTarget(app)
+            return
         }
     }
 
-    /// 把一个正在运行的 App 拉到前台。统一走 openApplication（与 launch/focus 同路径，可靠）——
-    /// 而非 `activate(from: .current)`：Relay 是后台 agent、非前台，协作式激活会静默失败。
-    /// URL 解析：优先 bundleURL，回退按 bundleIdentifier 解析；都拿不到则放弃（不退化为 activate()，
-    /// 后者对 agent 同样静默失败，并非真实兜底）。
-    private func bringRunningAppToFront(_ runningApp: NSRunningApplication) {
+    /// 把一个正在运行的 App 拉到前台，返回是否成功执行了拉前动作。统一走 openApplication
+    /// （与 launch/focus 同路径，可靠）——而非 `activate(from: .current)`：Relay 是后台 agent、非前台，
+    /// 协作式激活会静默失败。已退出或 URL 解析失败（优先 bundleURL，回退 bundleIdentifier）时返回
+    /// false，交由调用方退化（不退化为 activate()，后者对 agent 同样静默失败，并非真实兜底）。
+    /// `isTerminated` 再判一次以收紧 returnToPrevious 检查与此处之间的极窄竞态。
+    @discardableResult
+    private func bringRunningAppToFront(_ runningApp: NSRunningApplication) -> Bool {
+        guard !runningApp.isTerminated else { return false }
         let url = runningApp.bundleURL
             ?? runningApp.bundleIdentifier.flatMap { workspace.urlForApplication(withBundleIdentifier: $0) }
-        guard let url else { return }
+        guard let url else { return false }
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+        return true
     }
 }
