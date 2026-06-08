@@ -237,3 +237,36 @@ Wired user-authored Icon.icon as Relay's app icon: moved into the filesystem-syn
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Generic branch policy in AGENTS.md
+
+**Date**: 2026-06-08
+**Task**: Generic branch policy in AGENTS.md
+**Branch**: `main`
+
+### Summary
+
+Removed stale active-branch reference from AGENTS.md Project Phase (feat/relay-mvp already merged to main) and added a branching convention: per-feature work uses feat/* branches; merged feat/* branches are kept as historical archives and never deleted.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8d60555` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

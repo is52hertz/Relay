@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 4
+- **Total Sessions**: 5
 - **Last Active**: 2026-06-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~239 | Active |
+| `journal-1.md` | ~272 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 5 | 2026-06-08 | Generic branch policy in AGENTS.md | `8d60555` | `main` |
 | 4 | 2026-06-08 | Apply Icon Composer app icon | `6aa0c8a`, `9710c69` | `main` |
 | 3 | 2026-06-07 | PR#1 审查修复 + Codex 独立验证 | `df81339`, `f0569c3`, `0eec022`, `d819bd9` | `feat/relay-mvp` |
 | 2 | 2026-06-05 | AGENTS.md 补全 + .trellis/spec 重塑为 Swift/macOS 规范 | `77134d0`, `c03d9b0`, `b59d19d` | `feat/relay-mvp` |
