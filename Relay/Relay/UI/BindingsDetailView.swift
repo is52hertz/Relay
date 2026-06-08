@@ -72,7 +72,7 @@ struct BindingsDetailView: View {
 
     private func addApp() {
         guard let app = pickApplication() else { return }
-        let binding = HotkeyBinding(app: app, behavior: model.settings.defaultBehavior)
+        let binding = HotkeyBinding(app: app, configID: model.settings.defaultConfigID)
         model.addBinding(binding, to: profile.id)
     }
 

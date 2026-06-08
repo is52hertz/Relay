@@ -30,11 +30,11 @@ final class AppActivationService {
 
     // MARK: - 主入口
 
-    /// 处理一条绑定的热键触发，返回实际执行的动作（便于上层提示/测试）。
+    /// 处理一条绑定的热键触发（按其引用的激活配置决策），返回实际执行的动作（便于上层提示/测试）。
     @discardableResult
-    func handle(_ binding: HotkeyBinding) -> AppActivationDecision.Action {
+    func handle(_ binding: HotkeyBinding, config: ActivationConfig) -> AppActivationDecision.Action {
         let state = runtimeState(for: binding.app)
-        let action = AppActivationDecision.action(for: state, behavior: binding.behavior)
+        let action = AppActivationDecision.action(for: state, config: config)
         perform(action, for: binding.app)
         return action
     }
@@ -49,10 +49,31 @@ final class AppActivationService {
             break // App 失效的 UI 标记在 PR4；执行层无副作用。
         case .launch, .focus:
             bringToFront(app)
+        case .launchWithoutFocus:
+            launchWithoutFocus(app)
         case .hide:
             hideTarget(app)
+        case .quit:
+            quitTarget(app)
         case .returnToPrevious:
             returnToPrevious(from: app)
+        case .minimize, .showWithoutFocus:
+            break // 占位：本期不接入引擎（决策层也不会产出）。
+        }
+    }
+
+    /// 启动但不聚焦：openApplication 且 activates=false（公开 API，不偷取焦点）。
+    private func launchWithoutFocus(_ app: TargetApp) {
+        guard let url = resolver.resolvedURL(for: app) else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+    }
+
+    /// 退出目标的全部运行实例（公开 API）。
+    private func quitTarget(_ app: TargetApp) {
+        for instance in resolver.runningInstances(of: app) {
+            instance.terminate()
         }
     }
 

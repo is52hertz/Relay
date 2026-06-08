@@ -10,6 +10,9 @@ import Foundation
 struct RelayTests {
 
     @Test func appConfigurationCodableRoundTrip() throws {
+        let activationConfig = ActivationConfig(
+            name: "Return to Previous", notRunning: .launch, frontmost: .returnToPrevious
+        )
         let app = TargetApp(
             bundleIdentifier: "com.apple.Safari",
             displayName: "Safari",
@@ -18,22 +21,32 @@ struct RelayTests {
         let binding = HotkeyBinding(
             app: app,
             hotkey: Hotkey(carbonKeyCode: 18, carbonModifiers: 4096),
-            behavior: .returnToPrevious
+            configID: activationConfig.id
         )
         let profile = Profile(name: "Coding", bindings: [binding])
-        let config = AppConfiguration(profiles: [profile], activeProfileID: profile.id)
+        var settings = AppSettings()
+        settings.defaultConfigID = activationConfig.id
+        let config = AppConfiguration(
+            profiles: [profile],
+            activeProfileID: profile.id,
+            activationConfigs: [activationConfig],
+            settings: settings
+        )
 
         let data = try JSONEncoder().encode(config)
         let decoded = try JSONDecoder().decode(AppConfiguration.self, from: data)
 
         #expect(decoded == config)
-        #expect(decoded.profiles.first?.bindings.first?.behavior == .returnToPrevious)
+        #expect(decoded.profiles.first?.bindings.first?.configID == activationConfig.id)
         #expect(decoded.activeProfileID == profile.id)
     }
 
-    @Test func focusBehaviorDefaults() {
-        #expect(FocusBehavior.defaultBehavior == .returnToPrevious)
-        #expect(FocusBehavior.allCases.count == 4)
+    @Test func makeDefaultSeedsConfigsAndDefaultID() {
+        let config = AppConfiguration.makeDefault()
+        #expect(config.activationConfigs.count == 4)
+        // 默认 id 指向种子中的第一条（Return to Previous）。
+        #expect(config.settings.defaultConfigID == config.activationConfigs.first?.id)
+        #expect(config.activationConfigs.first?.name == "Return to Previous")
     }
 
     @Test @MainActor func persistenceStoreSaveLoadRoundTrip() throws {

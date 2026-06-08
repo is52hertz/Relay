@@ -13,6 +13,9 @@ import KeyboardShortcuts
 @MainActor
 final class HotkeyRegistrationService {
     private let activation: AppActivationService
+    /// 触发时按 binding.configID 解析最新的激活配置（由 AppController 注入，读 model 的全局配置表）。
+    /// 配置编辑不触发 hotkeysDidChange，故在触发时实时解析以拿到最新配置。
+    private let configResolver: (UUID) -> ActivationConfig?
 
     private var activeNames: [KeyboardShortcuts.Name] = []
     private var bindingsByName: [KeyboardShortcuts.Name: HotkeyBinding] = [:]
@@ -20,8 +23,9 @@ final class HotkeyRegistrationService {
     /// 通过 setShortcut(nil)/disable 控制是否触发；handler 内读 bindingsByName 取最新动作）。
     private var handlersInstalled: Set<KeyboardShortcuts.Name> = []
 
-    init(activation: AppActivationService) {
+    init(activation: AppActivationService, configResolver: @escaping (UUID) -> ActivationConfig?) {
         self.activation = activation
+        self.configResolver = configResolver
     }
 
     func activate(_ profile: Profile?) {
@@ -53,8 +57,9 @@ final class HotkeyRegistrationService {
         guard handlersInstalled.insert(name).inserted else { return }
         KeyboardShortcuts.onKeyDown(for: name) { [weak self] in
             MainActor.assumeIsolated {
-                guard let self, let binding = self.bindingsByName[name] else { return }
-                self.activation.handle(binding)
+                guard let self, let binding = self.bindingsByName[name],
+                      let config = self.configResolver(binding.configID) else { return }
+                self.activation.handle(binding, config: config)
             }
         }
     }

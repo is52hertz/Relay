@@ -15,10 +15,10 @@ Durable handoff for the Relay macOS app. Scope: `Relay/` (Xcode project).
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`：未标注类型默认 MainActor 隔离。**纯数据模型标 `nonisolated`** 以满足 Codable/Hashable/Sendable。
 
 ## 模块地图（PR1 已落）
-- `Relay/Models/` — `FocusBehavior` / `Hotkey`(carbon码,库无关) / `TargetApp` / `HotkeyBinding` / `Profile` / `AppConfiguration`(+`AppSettings`)。皆 `nonisolated` Codable 值类型。
+- `Relay/Models/` — `ActivationConfig`(按状态焦点配置；含 `NotRunningAction`/`BackgroundAction`/`FrontmostAction` 三枚举，非法组合不可表达) / `Hotkey`(carbon码,库无关) / `TargetApp` / `HotkeyBinding`(`configID` 引用配置) / `Profile` / `AppConfiguration`(`activationConfigs[]` 全局表 + `AppSettings.defaultConfigID`)。皆 `nonisolated` Codable 值类型。
 - `Relay/Persistence/PersistenceStore.swift` — `@MainActor`，原子写 JSON 到 `~/Library/Application Support/cn.Teethe.Relay/config.json`。
 - `Relay/State/` — `AppModel`(`@MainActor @Observable` **SoT**；Profile CRUD + active 切换 + 去抖保存 + `hotkeysDidChange` 钩子) / `AppController`(组合根：接 model↔服务，启动/切换即重注册热键)。
-- `Relay/UI/` — `MenuBarContent`(inline Picker 切 Profile + SettingsLink + Quit)、`SettingsRootView`(NavigationSplitView：Profile 侧栏增/改名/删/设 active + 详情)、`BindingsDetailView`(增删 App/排序/空状态/active 标识)、`BindingRow`(图标+名+失效/冲突标记+录入器+行为 Picker)、`ShortcutRecorder`(自绘录入：本地 keyDown 监听，无 AX)、`GeneralSettingsView`(登录启动/Dock/默认行为)、`SettingsContainer`(Settings 分页：Profiles + General)。
+- `Relay/UI/` — `MenuBarContent`(inline Picker 切 Profile + SettingsLink + Quit)、`SettingsRootView`(NavigationSplitView：Profile 侧栏增/改名/删/设 active + 详情)、`BindingsDetailView`(增删 App/排序/空状态/active 标识)、`BindingRow`(图标+名+失效/冲突标记+录入器+`ActivationConfigPicker` 按名选配置)、`ShortcutRecorder`(自绘录入：本地 keyDown 监听，无 AX)、`GeneralSettingsView`(登录启动/Dock/默认配置 + 焦点配置表 `Table`+＋/－+二步删除确认)、`ActivationConfigPicker`(BindingRow 与 General 共用)、`SettingsContainer`(Settings 分页：Profiles + General)。
 - `Relay/Services/` — `AppActivationDecision`(纯决策, nonisolated) / `TargetAppResolver`(解析 URL/实例/图标) / `FrontmostTracker`(模型 A) / `AppActivationService`(执行层) / `Hotkey+KeyboardShortcuts`(桥接) / `HotkeyConflicts`(组内冲突, 纯) / `HotkeyRegistrationService`(active profile 注册) / `LoginItemService`(SMAppService 登录启动) / `DockIconController`(Dock 图标策略)。
 - `RelayApp.swift` — `MenuBarExtra` + `Settings` 场景。
 
@@ -33,6 +33,7 @@ Durable handoff for the Relay macOS app. Scope: `Relay/` (Xcode project).
 - **管理 UI 用 `Window`(id `main`) 而非 `Settings` 场景**：Settings 窗口不支持自定义 `.toolbar` 按钮（Add App/Profile、Set as Active 会失效）、且切激活策略时窗口异常。菜单栏「Open Relay…」→ `openWindow` + `NSApplication.shared.activate()`；`.defaultLaunchBehavior(.suppressed)` 防 agent 启动弹窗。
 - **跨 App 激活一律用 `NSWorkspace.openApplication(at: bundleURL)`，不要用 `NSRunningApplication.activate(from: .current)`**：Relay 是后台 agent、非前台，协作式激活会静默失败（Return to Previous 曾因此切不回去）。
 - **`ShortcutRecorder` 录制期间设 `KeyboardShortcuts.isEnabled=false`，stop()/dismantle 恢复 true**：否则按下的组合会被已注册的全局热键截走、触发别的 App，录不进来（也使「录入重复组合 → 触发组内冲突 Warn」成为可能）。
+- **焦点行为 = `ActivationConfig` 全局表（替代旧 `FocusBehavior` 枚举）**：每条按「未启动/后台/前台」赋原子动作，绑定/默认存 `configID`/`defaultConfigID`。决策层 `AppActivationDecision.action(for:config:)` 仍纯，输出 `Action`（含新增 `launchWithoutFocus`=`openApplication activates:false`、`quit`=`terminate()`）。**本期占位（无引擎效果）**：后台整列禁用（running 恒 `focus`）、前台「最小化」禁用（决策退化为 `none`）；`Action` 预留 `minimize`/`showWithoutFocus`。配置编辑经 `HotkeyRegistrationService` 的 `configResolver` 闭包在按键时实时解析，**无需重注册**（`AppController` 接线，读 `model`）。删除被引用配置 → 二步确认（`confirmationDialog` 列依赖 `Profile › App`）后把绑定回退全局默认；删全局默认先把指针移到剩余首行；`－` 在最后一行禁用（始终 ≥1 配置，无悬空引用）。**下一个任务**：后台可编辑（用 `NSRunningApplication.isHidden` 拆 已隐藏/未隐藏）、「最小化」/「显示不聚焦」需引入 Accessibility（**延迟授权**：仅在用户配置/首次执行时 `AXIsProcessTrustedWithOptions` 弹窗；权限为 App 级全量）+ 改 AGENTS.md 安全边界。
 
 ## 验证命令
 ```bash
@@ -48,5 +49,6 @@ xcodebuild test -scheme Relay -only-testing:RelayTests -destination 'platform=ma
 - ✅ PR4 设置 UI：Profile 侧栏(增/改名/删/设 active) + 绑定行(图标/失效/冲突徽章/自绘录入器/行为 Picker) + 增删 App(NSOpenPanel)/排序/空状态。AppModel 加 binding CRUD（视图解析 onDelete/onMove，model 仍无 SwiftUI）。**坑：KeyboardShortcuts 2.4.0 的 SwiftUI Recorder 仅 Name 模式（会自动注册）→ 自绘 `ShortcutRecorder`(本地 keyDown + `Shortcut(event:)`) 保持「仅 active profile 注册」不变式**。build+test 绿(9 用例) + 真机 smoke 启动通过。
 - ✅ PR5 收尾：`LoginItemService`(SMAppService) + `DockIconController` + `GeneralSettingsView`(登录启动/Dock/默认行为) + Settings 分页(`SettingsContainer`)。系统副作用经 `AppController.settingsDidChange` 接线、启动同步、测试宿主跳过。build+test 绿(9) + 真机 smoke 启动通过。
 - 🎉 PRD 全部 5 个 PR 完成。UI 全用标准容器（NavigationSplitView/Form/List/toolbar/MenuBarExtra），macOS 26.5 自动 Liquid Glass；未手抹玻璃；图标/徽章补了 accessibilityLabel。
+- ✅ 焦点行为重构（06-08）：删 `FocusBehavior` 枚举 → `ActivationConfig` 全局可增删改配置表（General 内 `Table`+＋/－+二步删除确认）；按状态动作（未启动/前台可编辑，后台＋最小化占位禁用）；新增 `launchWithoutFocus`/`quit`；`ActivationConfigPicker` 复用于 BindingRow/General；`configResolver` 实时解析。无迁移（未上线）。build+RelayTests 绿(10)。详见 `.trellis/tasks/archive/2026-06/06-08-redesign-focus-behavior-per-state/prd.md`。
 - 仍未做（PRD 明确 out-of-scope / 延后）：热键切 Profile、前台自动切 Profile、多 Profile 同时激活、跨 Space/全屏窗口级控制。项目级 Swift spec（`.trellis/spec`）仍待 bootstrap。
 - ⚠️ 项目级 Swift/macOS 编码 spec 尚未撰写（`.trellis/spec/*` 仍是 web 模板占位；`00-bootstrap-guidelines` 任务待办）。
