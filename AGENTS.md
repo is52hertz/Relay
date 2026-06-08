@@ -17,7 +17,7 @@ Relay is a native macOS (Swift / SwiftUI / AppKit) global application switcher �
 
 ## Project Phase
 
-- **Relay app (`Relay/`)**: v1 feature-complete (PR1–PR5) and manually tested; menu-bar agent plus a management `Window`. Lives on branch `feat/relay-mvp`, not yet merged to `main`.
+- **Relay app (`Relay/`)**: v1 feature-complete (PR1–PR5) and manually tested; menu-bar agent plus a management `Window`.
 - **Project specs (`.trellis/spec/`)**: not yet authored — still generic templates; see the `00-bootstrap-guidelines` task.
 
 ## Development Rules
@@ -46,6 +46,7 @@ Relay is a native macOS (Swift / SwiftUI / AppKit) global application switcher �
 - Before committing, inspect dirty files and separate current-task agent edits from unrecognized dirty files. Do not include unrecognized dirty files in commits unless the user explicitly asks to include them.
 - If a dirty file's ownership or task relevance cannot be determined safely, stop and ask the user before committing.
 - Group commits by coherent change unit. Do not push unless explicitly requested.
+- Branching: per-feature work lands on a `feat/*` branch that merges into the mainline. Keep merged `feat/*` branches as historical archives — never delete them (local or remote).
 - Commit message format (Conventional Commits):
   ```
   type(scope): short summary
