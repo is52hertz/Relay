@@ -203,3 +203,37 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Apply Icon Composer app icon
+
+**Date**: 2026-06-08
+**Task**: Apply Icon Composer app icon
+**Branch**: `main`
+
+### Summary
+
+Wired user-authored Icon.icon as Relay's app icon: moved into the filesystem-synchronized Relay/Relay/ folder, set ASSETCATALOG_COMPILER_APPICON_NAME=Icon (Debug+Release), removed empty AppIcon.appiconset placeholder. Verified via Debug build (actool -> Icon.icns, CFBundleIconName=Icon). Added relative root symlink Icon.icon -> Relay/Relay/Icon.icon for root-path access.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6aa0c8a` | (see git log) |
+| `9710c69` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
