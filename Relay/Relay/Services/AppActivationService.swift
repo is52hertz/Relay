@@ -99,14 +99,13 @@ final class AppActivationService {
         }
 
         // 合成 A→C→A 跳变会让 FrontmostTracker 把 previous 污染成目标 C（PR#7 Codex 反馈）：
-        // 抑制期内丢弃 C 的激活通知，回切后再显式恢复快照（不依赖通知时序）。
-        let snapshot = frontmost.activationSnapshot()
-        frontmost.isSuppressed = true
+        // 引用计数式抑制——begin 抓快照、end 归零时恢复，期间丢弃所有合成激活；
+        // 重叠/快速重复的多次 showWithoutFocus 会正确嵌套，不会被先完成者提前解除（PR#7 Codex 第二轮）。
+        frontmost.beginSuppression()
         // 强捕获 frontmost，保证即使 self 已释放也能解除抑制。
         bringToFront(app) { [weak self, frontmost = self.frontmost] in
             self?.bringRunningAppToFront(previousFrontmost)
-            frontmost.restore(snapshot)
-            frontmost.isSuppressed = false
+            frontmost.endSuppression()
         }
     }
 
