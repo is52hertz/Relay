@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "Core of this task: app activation/focus, hide/unhide, and the macOS permission posture — extend with AX window minimize (AXUIElement + kAXMinimizedAttribute) and lazy Accessibility permission (AXIsProcessTrusted)."}
+{"file": ".trellis/spec/app/architecture.md", "reason": "Inject the new AX service (WindowMinimizer) via AppController composition root; keep AppModel/decision layer free of it; integrity of enabling the Background column."}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "AX service is @MainActor; ActivationConfig/decision stay nonisolated + pure; correct isolation when calling AXUIElement APIs."}
+{"file": ".trellis/spec/swift/quality.md", "reason": "File layout/naming for the new service; Swift Testing for the now-live actions (background focus/showWithoutFocus/minimize, frontmost minimize); verify-before-commit."}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "General view: enable the Background column (remove disabled placeholder), Minimize selection triggers the lazy-permission explainer/prompt; native containers + accessibility."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Permission gating + degradation flow across decision→execution→UI; minimize-configured-but-untrusted path must be handled end-to-end."}

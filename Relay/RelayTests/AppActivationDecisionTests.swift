@@ -2,8 +2,8 @@
 //  AppActivationDecisionTests.swift
 //  RelayTests
 //
-//  覆盖 RuntimeState × ActivationConfig 的纯决策映射，含新增的 launchWithoutFocus / quit，
-//  以及后台占位（一律 focus）与前台 minimize 占位（退化为 none）。
+//  覆盖 RuntimeState × ActivationConfig 的纯决策映射，含 launchWithoutFocus / quit，
+//  以及现已接入的后台三态（focus / showWithoutFocus / minimize）与前台 minimize。
 //
 
 import Foundation
@@ -36,12 +36,14 @@ struct AppActivationDecisionTests {
             for: .notRunning, config: config(notRunning: .none, frontmost: .none)) == .none)
     }
 
-    @Test func runningAlwaysFocuses_backgroundIsPlaceholder() {
-        // 后台占位：无论 background 配置为何，引擎一律 focus。
-        for bg in BackgroundAction.allCases {
-            let c = config(notRunning: .launch, background: bg, frontmost: .none)
-            #expect(AppActivationDecision.action(for: .running, config: c) == .focus)
-        }
+    @Test func runningMapsPerBackgroundConfig() {
+        // 后台三态均已接入：决策层按配置直出对应动作（信任态/降级是执行层关注点）。
+        #expect(AppActivationDecision.action(
+            for: .running, config: config(notRunning: .launch, background: .focus, frontmost: .none)) == .focus)
+        #expect(AppActivationDecision.action(
+            for: .running, config: config(notRunning: .launch, background: .showWithoutFocus, frontmost: .none)) == .showWithoutFocus)
+        #expect(AppActivationDecision.action(
+            for: .running, config: config(notRunning: .launch, background: .minimize, frontmost: .none)) == .minimize)
     }
 
     @Test func frontmostMapsPerConfig() {
@@ -53,9 +55,15 @@ struct AppActivationDecisionTests {
             for: .frontmost, config: config(notRunning: .launch, frontmost: .quit)) == .quit)
         #expect(AppActivationDecision.action(
             for: .frontmost, config: config(notRunning: .launch, frontmost: .none)) == .none)
-        // minimize 占位：退化为 none。
+        // minimize 现已接入：决策层产出 .minimize（执行层处理 AX 信任/降级）。
         #expect(AppActivationDecision.action(
-            for: .frontmost, config: config(notRunning: .launch, frontmost: .minimize)) == .none)
+            for: .frontmost, config: config(notRunning: .launch, frontmost: .minimize)) == .minimize)
+    }
+
+    @Test func allActionsAreImplemented() {
+        for a in NotRunningAction.allCases { #expect(a.id == a.rawValue) }
+        #expect(BackgroundAction.allCases.allSatisfy { $0.isImplemented })
+        #expect(FrontmostAction.allCases.allSatisfy { $0.isImplemented })
     }
 
     /// 4 个种子默认配置必须 1:1 复刻旧 FocusBehavior 矩阵（未启动 / 前台）。

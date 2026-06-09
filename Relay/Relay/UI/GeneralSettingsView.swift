@@ -3,13 +3,15 @@
 //  Relay
 //
 //  通用设置：登录启动、Dock 图标、新建绑定的默认激活配置，以及全局「激活配置表」编辑。
-//  配置表（增删改名 + 每状态动作）写回 AppModel；后台列与前台「最小化」为占位禁用（见 PRD）。
+//  配置表（增删改名 + 每状态动作）写回 AppModel。后台/前台三态均可编辑；
+//  选「Minimize」时延迟申请 Accessibility 权限（PRD D5）。
 //
 
 import SwiftUI
 
 struct GeneralSettingsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(WindowMinimizer.self) private var minimizer
 
     @State private var selection: Set<UUID> = []
     /// 待删除且有依赖的配置（触发两步确认对话框）；nil 时不弹窗。
@@ -70,7 +72,6 @@ struct GeneralSettingsView: View {
                 .pickerStyle(.menu)
             }
             TableColumn("Background") { config in
-                // 占位：选项可见但禁用，引擎本期一律按 Focus 执行（PRD D5）。
                 Picker("", selection: backgroundBinding(config)) {
                     ForEach(BackgroundAction.allCases) { action in
                         Text(action.displayName).tag(action)
@@ -78,16 +79,11 @@ struct GeneralSettingsView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.menu)
-                .disabled(true)
             }
             TableColumn("Frontmost") { config in
                 Picker("", selection: frontmostBinding(config)) {
                     ForEach(FrontmostAction.allCases) { action in
-                        // 占位：最小化项禁用（需 Accessibility，下一任务）——禁用以阻止被选中，
-                        // 否则选中后决策层会静默退化为 .none（不符合占位语义）。
                         Text(action.displayName).tag(action)
-                            .foregroundStyle(action.isImplemented ? .primary : .secondary)
-                            .disabled(!action.isImplemented)
                     }
                 }
                 .labelsHidden()
@@ -205,14 +201,27 @@ struct GeneralSettingsView: View {
     private func backgroundBinding(_ config: ActivationConfig) -> Binding<BackgroundAction> {
         Binding(
             get: { config.background },
-            set: { var c = config; c.background = $0; model.updateActivationConfig(c) }
+            set: {
+                var c = config; c.background = $0; model.updateActivationConfig(c)
+                if $0 == .minimize { requestMinimizePermissionIfNeeded() }
+            }
         )
     }
 
     private func frontmostBinding(_ config: ActivationConfig) -> Binding<FrontmostAction> {
         Binding(
             get: { config.frontmost },
-            set: { var c = config; c.frontmost = $0; model.updateActivationConfig(c) }
+            set: {
+                var c = config; c.frontmost = $0; model.updateActivationConfig(c)
+                if $0 == .minimize { requestMinimizePermissionIfNeeded() }
+            }
         )
+    }
+
+    /// 用户选「Minimize」时延迟申请 Accessibility 权限（PRD D5）。已授权则不打扰。
+    /// 系统提示打开「系统设置 › 隐私与安全性 › 辅助功能」；不授权时 App 其余功能不受影响。
+    private func requestMinimizePermissionIfNeeded() {
+        guard !minimizer.isTrusted else { return }
+        minimizer.requestPermission()
     }
 }

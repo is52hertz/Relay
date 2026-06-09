@@ -28,11 +28,12 @@ nonisolated enum NotRunningAction: String, Codable, CaseIterable, Hashable, Send
     }
 }
 
-/// 「后台」可选动作。本期占位：选项可见，但引擎一律按 focus 执行（见 PRD D5）。
+/// 「后台」可选动作。三者全部接入引擎：focus = unhide+activate；
+/// showWithoutFocus = unhide 不激活；minimize = AX 最小化焦点窗口（延迟授权）。
 nonisolated enum BackgroundAction: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
     case focus            // 聚焦
-    case showWithoutFocus // 显示不聚焦（占位）
-    case minimize         // 最小化（占位，需 Accessibility，下一任务）
+    case showWithoutFocus // 显示不聚焦
+    case minimize         // 最小化（经 Accessibility，延迟授权）
 
     var id: String { rawValue }
 
@@ -44,17 +45,17 @@ nonisolated enum BackgroundAction: String, Codable, CaseIterable, Hashable, Send
         }
     }
 
-    /// 本期是否接入引擎（其余为占位项）。
-    var isImplemented: Bool { self == .focus }
+    /// 三者均已接入引擎。
+    var isImplemented: Bool { true }
 }
 
-/// 「前台」可选动作（本期可编辑·有功能；minimize 为占位禁用）。
+/// 「前台」可选动作（全部接入引擎；minimize 经 Accessibility，延迟授权）。
 nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
     case returnToPrevious // 切回上一个
     case hide             // 隐藏
     case quit             // 退出
     case none             // 不做事
-    case minimize         // 最小化（占位，需 Accessibility，下一任务）
+    case minimize         // 最小化（经 Accessibility，延迟授权）
 
     var id: String { rawValue }
 
@@ -68,8 +69,8 @@ nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Senda
         }
     }
 
-    /// 本期是否接入引擎（minimize 为占位）。
-    var isImplemented: Bool { self != .minimize }
+    /// 全部已接入引擎。
+    var isImplemented: Bool { true }
 }
 
 // MARK: - 配置本体

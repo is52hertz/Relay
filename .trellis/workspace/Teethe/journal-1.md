@@ -303,3 +303,37 @@ Replaced 4-preset FocusBehavior with a global, user-editable per-state Activatio
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Background-editable + minimize via Accessibility
+
+**Date**: 2026-06-09
+**Task**: Background-editable + minimize via Accessibility
+**Branch**: `feat/background-minimize-accessibility`
+
+### Summary
+
+Made the placeholder actions real: Background column editable; minimize (Frontmost+Background) via a new @MainActor WindowMinimizer (sole AX entry, kAXMinimizedAttribute) with lazy permission (prompts only on selecting Minimize) and safe degradation (no-op + once-per-session NSAlert when untrusted). Refinements from manual test: showWithoutFocus = raise-then-return-focus (D6); focus opportunistically un-minimizes when already trusted (D7); runtimeState treats an active app with no visible window (all minimized/zero) as background so it restores via the focus path (D8). AppActivationDecision stays pure; AGENTS.md relaxed to a general lazy-permission principle. Build+RelayTests green (11); trellis-check clean. Added Test/relay-minimize-test-checklist.html. Known limitation: untrusted + all-minimized-without-switching won't restore. On feat/background-minimize-accessibility, not yet pushed.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d0fed3a` | (see git log) |
+| `1a8516b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

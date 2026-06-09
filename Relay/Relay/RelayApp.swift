@@ -21,6 +21,7 @@ struct RelayApp: App {
             SettingsContainer()
                 .environment(controller.model)
                 .environment(controller.resolver)
+                .environment(controller.minimizer)
                 .frame(minWidth: 760, minHeight: 480)
         }
         .defaultLaunchBehavior(.suppressed)

@@ -21,7 +21,8 @@ nonisolated enum AppActivationDecision {
 
     /// 决策输出（原子动作）。副作用由 AppActivationService 执行；
     /// `returnToPrevious` 在无 previous 时由执行层退化为 hide。
-    /// `minimize` / `showWithoutFocus` 本期为占位：决策层不产出它们（后台一律 focus、前台 minimize 占位禁用）。
+    /// `minimize` 需 Accessibility（AX 不可信时由执行层「无操作 + 一次性提示」降级，见 PRD D4）；
+    /// 决策层保持纯（不查信任态），仅产出动作。
     enum Action: Equatable, Sendable {
         case none
         case markInvalid
@@ -31,7 +32,6 @@ nonisolated enum AppActivationDecision {
         case hide
         case quit
         case returnToPrevious
-        // 占位（本期不产出）：
         case minimize
         case showWithoutFocus
     }
@@ -47,16 +47,18 @@ nonisolated enum AppActivationDecision {
             case .none:               return .none
             }
         case .running:
-            // 后台本期为占位：无论配置为何，引擎一律按聚焦执行（见 PRD D5）。
-            return .focus
+            switch config.background {
+            case .focus:            return .focus
+            case .showWithoutFocus: return .showWithoutFocus
+            case .minimize:         return .minimize
+            }
         case .frontmost:
             switch config.frontmost {
             case .returnToPrevious: return .returnToPrevious
             case .hide:             return .hide
             case .quit:             return .quit
             case .none:             return .none
-            // 占位：最小化未接入，退化为不做事（UI 已禁用该选项，不应被选中）。
-            case .minimize:         return .none
+            case .minimize:         return .minimize
             }
         }
     }

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "Verify AX minimize uses only AXUIElement + kAXMinimizedAttribute (no other private APIs), lazy permission (no launch-time prompt), and correct hide/unhide for focus/showWithoutFocus via isHidden."}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "Check AX service @MainActor isolation; models/decision remain nonisolated + pure; no AppKit/AX leakage into data layer."}
+{"file": ".trellis/spec/swift/quality.md", "reason": "Review test coverage of the now-live actions + degradation path; file layout/naming; build + RelayTests green before commit."}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "Check the Background column is properly enabled, the Minimize permission explainer is HIG-native (no hand-rolled glass), accessibility intact, and the untrusted-degradation notice surfaces once."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Audit the end-to-end permission/degradation data flow: editor selection → trust check/prompt → key-down execution → graceful do-nothing+notice when untrusted."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Catch duplication between the new minimize/showWithoutFocus execution and existing bringToFront/hideTarget paths in AppActivationService."}
