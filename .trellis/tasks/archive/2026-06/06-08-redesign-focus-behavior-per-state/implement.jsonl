@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "New ActivationConfig + reworked AppConfiguration/HotkeyBinding/AppSettings must stay nonisolated Codable; decision fn stays pure; MainActor isolation rules for services/UI."}
+{"file": ".trellis/spec/swift/quality.md", "reason": "File layout/naming for the new model + Swift Testing for the extended pure decision matrix (launchWithoutFocus/quit); verify-before-commit commands."}
+{"file": ".trellis/spec/app/architecture.md", "reason": "AppModel single source of truth, AppController composition root, persistence, and the 'how to add a feature' flow — core of the model/state/persistence change (configs[] + id references)."}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "App activation/focus + Return-to-Previous patterns; needed to add launchWithoutFocus (openApplication activates:false) and quit (terminate) in the execution layer correctly."}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "General-view editable Table (+/- bar, per-state Pickers, disabled placeholders), native HIG containers + automatic Liquid Glass, accessibility, two-way editing, confirm dialog patterns."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Binding now references a config by id across layers; delete→reassign-to-default and live picker updates are cross-layer data-flow concerns."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Per-state Picker cells and the config-picker reused in BindingRow + GeneralSettingsView — avoid duplication."}

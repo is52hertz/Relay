@@ -48,7 +48,10 @@ struct BindingRow: View {
             ShortcutRecorder(hotkey: hotkeyBinding)
                 .frame(width: 150)
 
-            behaviorPicker
+            ActivationConfigPicker(selection: configBinding)
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 170)
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .contain)
@@ -84,24 +87,12 @@ struct BindingRow: View {
         .frame(width: 280)
     }
 
-    private var behaviorPicker: some View {
-        Picker("Behavior", selection: behaviorBinding) {
-            ForEach(FocusBehavior.allCases) { behavior in
-                Text(behavior.displayName).tag(behavior)
-            }
-        }
-        .labelsHidden()
-        .pickerStyle(.menu)
-        .frame(width: 170)
-        .help(binding.behavior.summary)
-    }
-
-    private var behaviorBinding: Binding<FocusBehavior> {
+    private var configBinding: Binding<UUID> {
         Binding(
-            get: { binding.behavior },
+            get: { binding.configID },
             set: {
                 var updated = binding
-                updated.behavior = $0
+                updated.configID = $0
                 model.updateBinding(updated, in: profileID)
             }
         )

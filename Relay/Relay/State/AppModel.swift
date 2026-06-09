@@ -117,6 +117,92 @@ final class AppModel {
         }
     }
 
+    // MARK: - Activation configs（全局共享、跨 Profile）
+
+    var activationConfigs: [ActivationConfig] {
+        configuration.activationConfigs
+    }
+
+    func activationConfig(id: UUID) -> ActivationConfig? {
+        configuration.activationConfigs.first { $0.id == id }
+    }
+
+    /// 全局默认配置；id 失效时回退到第一条（始终存在 ≥1 条，见删除规则）。
+    var defaultConfig: ActivationConfig? {
+        activationConfig(id: configuration.settings.defaultConfigID)
+            ?? configuration.activationConfigs.first
+    }
+
+    @discardableResult
+    func addActivationConfig(name: String) -> ActivationConfig {
+        // 新建一份合理的默认（与 "Launch or Focus" 一致），用户随后可编辑。
+        let config = ActivationConfig(
+            name: name, notRunning: .launch, background: .focus, frontmost: .none
+        )
+        configuration.activationConfigs.append(config)
+        scheduleSave()
+        return config
+    }
+
+    func renameActivationConfig(_ id: UUID, to name: String) {
+        guard let index = configIndex(id) else { return }
+        configuration.activationConfigs[index].name = name
+        scheduleSave()
+    }
+
+    /// 整条更新一份激活配置（编辑器写回）。
+    func updateActivationConfig(_ config: ActivationConfig) {
+        guard let index = configIndex(config.id) else { return }
+        configuration.activationConfigs[index] = config
+        scheduleSave()
+    }
+
+    /// 跨所有 Profile 收集引用某配置的绑定（用于删除前的依赖确认）。
+    func dependents(ofConfig id: UUID) -> [HotkeyBinding] {
+        configuration.profiles.flatMap { profile in
+            profile.bindings.filter { $0.configID == id }
+        }
+    }
+
+    /// 删除一份激活配置（见 PRD「Delete & integrity rules」）：
+    /// - 始终保留 ≥1 条（最后一条不可删）。
+    /// - 若删的是当前全局默认：先把默认移到剩余的第一条。
+    /// - 所有引用该配置的绑定改引新的全局默认。
+    func deleteActivationConfig(_ id: UUID) {
+        guard configuration.activationConfigs.count > 1,
+              configIndex(id) != nil else { return }
+
+        // 先确定删除后的回退默认（若删的是默认，移到剩余第一条）。
+        let fallbackID: UUID
+        if configuration.settings.defaultConfigID == id {
+            fallbackID = configuration.activationConfigs.first { $0.id != id }!.id
+            configuration.settings.defaultConfigID = fallbackID
+        } else {
+            fallbackID = configuration.settings.defaultConfigID
+        }
+
+        // 把所有引用该配置的绑定改引回退默认。
+        reassignBindings(fromConfig: id, toConfig: fallbackID)
+
+        configuration.activationConfigs.removeAll { $0.id == id }
+        scheduleSave()
+        // 若有 active profile 的绑定被改引，热键动作可能变化——重注册无害（实时解析配置）。
+        hotkeysDidChange?(activeProfile)
+    }
+
+    private func reassignBindings(fromConfig oldID: UUID, toConfig newID: UUID) {
+        for pIndex in configuration.profiles.indices {
+            for bIndex in configuration.profiles[pIndex].bindings.indices
+            where configuration.profiles[pIndex].bindings[bIndex].configID == oldID {
+                configuration.profiles[pIndex].bindings[bIndex].configID = newID
+            }
+        }
+    }
+
+    private func configIndex(_ id: UUID) -> Int? {
+        configuration.activationConfigs.firstIndex { $0.id == id }
+    }
+
     // MARK: - Settings
 
     var settings: AppSettings {

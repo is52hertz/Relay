@@ -25,10 +25,13 @@ final class AppController {
         let resolver = TargetAppResolver()
         let frontmost = FrontmostTracker()
         let activation = AppActivationService(resolver: resolver, frontmost: frontmost)
-        let registration = HotkeyRegistrationService(activation: activation)
+        let model = AppModel()
+        // 触发时按 id 解析最新激活配置（配置编辑不重注册热键，故实时读 model 的全局表）。
+        let registration = HotkeyRegistrationService(activation: activation) { [model] id in
+            model.activationConfig(id: id)
+        }
         let loginItem = LoginItemService()
         let dockIcon = DockIconController()
-        let model = AppModel()
 
         self.resolver = resolver
         self.frontmost = frontmost
