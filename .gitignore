@@ -24,3 +24,6 @@ DerivedData/
 # Swift Package Manager (keep Package.resolved committed for reproducible builds)
 .swiftpm/
 .build/
+
+# Playwright MCP scratch (snapshots / console logs from local debugging)
+.playwright-mcp/
