@@ -3,14 +3,30 @@
 ## Scenes
 
 - `MenuBarExtra` (menu style) is the primary surface: profile switcher (active row shows a
-  `checkmark`), "Open Relay…", "Quit".
-- The management UI is a **`Window` (id `"main"`)**, opened from the menu via
-  `@Environment(\.openWindow)` + `NSApplication.shared.activate()`, with
-  `.defaultLaunchBehavior(.suppressed)` so the agent doesn't auto-open it at launch.
-- **Do not put the management UI in the `Settings` scene.** Settings windows drop custom
-  `.toolbar` buttons (Add App / Add Profile / Set Active became dead) and misbehave when the
-  activation policy changes. `SettingsContainer` (a `TabView`: Profiles + General) lives in the
-  Window.
+  `checkmark`), "Open Relay…" (no shortcut), "Quit". Its **label** view hosts the launch-source
+  trigger (see below).
+- The **management UI (Profiles)** is a **`Window` (id `"main"`)** — `ProfilesView`
+  (NavigationSplitView with the "Add Profile" toolbar), injecting `AppModel` + `TargetAppResolver`.
+  It must stay in a `Window`, **not** the `Settings` scene: Settings windows drop custom
+  `.toolbar` buttons (Add App / Add Profile / Set Active go dead) and misbehave when the
+  activation policy changes.
+- **General lives in a dedicated `Window` (id `"settings"`)**, **not** the SwiftUI `Settings`
+  scene — SwiftUI's `Settings` scene handles `NavigationSplitView` poorly (phantom detail-column
+  inset, sidebar jitter) and doesn't resize reliably. The root is `SettingsRootView`
+  (System-Settings-style `NavigationSplitView`, `columnVisibility: .constant(.doubleColumn)`,
+  sidebar-toggle removed; detail → `GeneralSettingsView`, a plain `.formStyle(.grouped)` `Form`
+  whose +/- are in-Form footer buttons). Inject `AppModel` + `WindowMinimizer` here. The system
+  ⌘, shortcut and the app-menu "Settings…" item are reattached via
+  `.commands { CommandGroup(replacing: .appSettings) { … } }` whose button calls
+  `@Environment(\.openWindow)` for the settings window (⌘, is bound there, exactly once). The
+  menu-bar "Settings…" item opens the same window but does **not** re-bind ⌘,.
+- **Launch-source-aware window**: keep `.defaultLaunchBehavior(.suppressed)` on the Window (it
+  never auto-restores). An `NSApplicationDelegateAdaptor` (`AppDelegate`) detects login-item launch
+  in `applicationDidFinishLaunching` via `NSAppleEventManager.shared().currentAppleEvent`
+  (`eventID == kAEOpenApplication` && `keyAEPropData` enum == `keyAELaunchedAsLogInItem`).
+  **Login launch → stay hidden; explicit launch (or `applicationShouldHandleReopen`) → open the
+  Window.** The delegate owns an `@Observable` `LaunchCoordinator` (no singleton); the MenuBarExtra
+  label observes its flag and calls `@Environment(\.openWindow)`. "Open Relay…" is the manual path.
 
 ## State injection & two-way editing
 
