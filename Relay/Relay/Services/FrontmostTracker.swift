@@ -17,9 +17,11 @@ final class FrontmostTracker {
     /// 上一个非自身的前台 App（供 Return to Previous）。
     var previousApp: NSRunningApplication? { previous }
 
-    /// 抑制激活记录：用于「显示不聚焦」的合成 A→C→A 跳变，避免把 previous 污染成被显示的目标 App
-    /// （见 PR#7 Codex 反馈）。抑制期内 didActivate 通知一律忽略。
-    var isSuppressed = false
+    /// 抑制激活记录：用于「显示不聚焦」的合成 A→C→A 跳变，避免把 previous 污染成被显示的目标 App。
+    /// 引用计数 + 快照：支持重叠的多次跳变嵌套——抑制持续到所有跳变结束，归零时恢复「任一跳变之前」
+    /// 的真实 (current, previous)，不依赖 didActivate 通知时序。（见 PR#7 Codex 两轮反馈）
+    private var suppressionDepth = 0
+    private var suppressionSnapshot: (current: NSRunningApplication?, previous: NSRunningApplication?)?
 
     private let selfBundleID: String?
     private var observer: NSObjectProtocol?
@@ -44,7 +46,7 @@ final class FrontmostTracker {
     }
 
     private func handleActivation(_ app: NSRunningApplication?) {
-        guard !isSuppressed else { return }
+        guard suppressionDepth == 0 else { return }
         guard let app else { return }
         // 排除 Relay 自身：激活自己不应污染 previous。
         if let selfBundleID, app.bundleIdentifier == selfBundleID { return }
@@ -53,15 +55,24 @@ final class FrontmostTracker {
         current = app
     }
 
-    /// 当前 (current, previous) 快照——供调用方在合成激活序列后恢复。
-    func activationSnapshot() -> (current: NSRunningApplication?, previous: NSRunningApplication?) {
-        (current, previous)
+    /// 进入一次合成激活序列：首次进入（计数 0→1）时快照 (current, previous)，并增加抑制计数。
+    /// 重叠的多次跳变只在最外层快照，保证恢复到「任一跳变之前」的真实状态。
+    func beginSuppression() {
+        if suppressionDepth == 0 {
+            suppressionSnapshot = (current, previous)
+        }
+        suppressionDepth += 1
     }
 
-    /// 恢复到快照的 (current, previous)（不依赖通知时序，作为抑制之外的兜底）。
-    func restore(_ snapshot: (current: NSRunningApplication?, previous: NSRunningApplication?)) {
-        current = snapshot.current
-        previous = snapshot.previous
+    /// 退出一次合成激活序列：抑制计数减一；归零时恢复最外层快照、丢弃期间的合成激活。
+    func endSuppression() {
+        guard suppressionDepth > 0 else { return }
+        suppressionDepth -= 1
+        if suppressionDepth == 0, let snapshot = suppressionSnapshot {
+            current = snapshot.current
+            previous = snapshot.previous
+            suppressionSnapshot = nil
+        }
     }
 
     deinit {
