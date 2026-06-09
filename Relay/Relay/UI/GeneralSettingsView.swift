@@ -31,13 +31,16 @@ struct GeneralSettingsView: View {
                 }
                 .help("Applied to each newly added app.")
             }
-            Section("Activation Behaviors") {
+            Section {
                 configTable
                 footerBar
+            } header: {
+                Text("Activation Behaviors")
+            } footer: {
+                Text("Each behavior names what happens when you trigger a shortcut, based on the target app's state. Shortcuts reference a behavior by name.")
             }
         }
         .formStyle(.grouped)
-        .frame(width: 560)
         .confirmationDialog(
             "Delete “\(pendingDelete?.name ?? "")”?",
             isPresented: deleteDialogPresented,
