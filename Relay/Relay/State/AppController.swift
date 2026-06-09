@@ -13,6 +13,8 @@ import Foundation
 final class AppController {
     let model: AppModel
     let resolver: TargetAppResolver
+    /// 暴露给 UI（编辑器选 Minimize 时延迟申请 Accessibility 权限）。
+    let minimizer: WindowMinimizer
 
     private let frontmost: FrontmostTracker
     private let activation: AppActivationService
@@ -20,11 +22,14 @@ final class AppController {
     private let loginItem: LoginItemService
     private let dockIcon: DockIconController
     private var terminateObserver: NSObjectProtocol?
+    /// AX 未授权提示只弹一次（每个 App 会话），避免每次触发都打扰（PRD D4）。
+    private var didWarnAccessibilityDenied = false
 
     init() {
         let resolver = TargetAppResolver()
         let frontmost = FrontmostTracker()
-        let activation = AppActivationService(resolver: resolver, frontmost: frontmost)
+        let minimizer = WindowMinimizer()
+        let activation = AppActivationService(resolver: resolver, frontmost: frontmost, minimizer: minimizer)
         let model = AppModel()
         // 触发时按 id 解析最新激活配置（配置编辑不重注册热键，故实时读 model 的全局表）。
         let registration = HotkeyRegistrationService(activation: activation) { [model] id in
@@ -35,11 +40,17 @@ final class AppController {
 
         self.resolver = resolver
         self.frontmost = frontmost
+        self.minimizer = minimizer
         self.activation = activation
         self.registration = registration
         self.loginItem = loginItem
         self.dockIcon = dockIcon
         self.model = model
+
+        // 配置为 minimize 但 AX 未授权时触发：弹一次性提示（不做任何破坏性动作，PRD D4）。
+        minimizer.onPermissionDenied = { [weak self] in
+            self?.warnAccessibilityDeniedOnce()
+        }
 
         model.hotkeysDidChange = { [registration] profile in
             registration.activate(profile)
@@ -72,6 +83,28 @@ final class AppController {
             MainActor.assumeIsolated {
                 model.saveNow()
             }
+        }
+    }
+
+    /// 一次性提示「最小化需 Accessibility 授权」。绝不在此自动改用别的破坏性动作（PRD D4）。
+    /// 引导用户在「通用设置 › 选 Minimize」处显式授权，或直接打开系统设置。
+    private func warnAccessibilityDeniedOnce() {
+        guard !didWarnAccessibilityDenied else { return }
+        didWarnAccessibilityDenied = true
+        NSApplication.shared.activate()
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Minimize needs Accessibility access"
+        alert.informativeText = """
+        Relay can’t minimize the window until you grant Accessibility access. \
+        Open System Settings › Privacy & Security › Accessibility and enable Relay, \
+        then try again.
+        """
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Later")
+        if alert.runModal() == .alertFirstButtonReturn {
+            let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+            NSWorkspace.shared.open(url)
         }
     }
 
