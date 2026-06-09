@@ -92,10 +92,21 @@ final class AppActivationService {
             $0.bundleIdentifier != app.bundleIdentifier
         } ?? false
 
-        // 在 openApplication 完成后再还焦，保证「抬升目标 → 还焦原 App」的顺序可靠落地。
-        bringToFront(app) { [weak self] in
-            guard shouldReturnFocus, let self, let previousFrontmost else { return }
-            self.bringRunningAppToFront(previousFrontmost)
+        // 无需还焦：普通置前，FrontmostTracker 正常记录（目标成为 current）。
+        guard shouldReturnFocus, let previousFrontmost else {
+            bringToFront(app)
+            return
+        }
+
+        // 合成 A→C→A 跳变会让 FrontmostTracker 把 previous 污染成目标 C（PR#7 Codex 反馈）：
+        // 抑制期内丢弃 C 的激活通知，回切后再显式恢复快照（不依赖通知时序）。
+        let snapshot = frontmost.activationSnapshot()
+        frontmost.isSuppressed = true
+        // 强捕获 frontmost，保证即使 self 已释放也能解除抑制。
+        bringToFront(app) { [weak self, frontmost = self.frontmost] in
+            self?.bringRunningAppToFront(previousFrontmost)
+            frontmost.restore(snapshot)
+            frontmost.isSuppressed = false
         }
     }
 
