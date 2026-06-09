@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
+- **Total Sessions**: 7
 - **Last Active**: 2026-06-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~305 | Active |
+| `journal-1.md` | ~339 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-06-09 | Background-editable + minimize via Accessibility | `d0fed3a`, `1a8516b` | `feat/background-minimize-accessibility` |
 | 6 | 2026-06-09 | Per-state ActivationConfig (redesign FocusBehavior) | `44f9736` | `feat/per-state-activation-config` |
 | 5 | 2026-06-08 | Generic branch policy in AGENTS.md | `8d60555` | `main` |
 | 4 | 2026-06-08 | Apply Icon Composer app icon | `6aa0c8a`, `9710c69` | `main` |
