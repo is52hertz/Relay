@@ -270,3 +270,36 @@ Removed stale active-branch reference from AGENTS.md Project Phase (feat/relay-m
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Per-state ActivationConfig (redesign FocusBehavior)
+
+**Date**: 2026-06-09
+**Task**: Per-state ActivationConfig (redesign FocusBehavior)
+**Branch**: `feat/per-state-activation-config`
+
+### Summary
+
+Replaced 4-preset FocusBehavior with a global, user-editable per-state ActivationConfig (General Table + ± + two-step delete confirm). Three per-state action enums; new launchWithoutFocus/quit; Background column + Frontmost Minimize are disabled placeholders; configResolver resolves live at key-down. No migration (app unreleased). Build + RelayTests 10/10 green. Manual UI test surfaced 3 Table polish issues (deselect-on-outside-click, rename-end-on-outside-click, picker text centering); a fix attempt was rolled back and the issues filed as GitHub #3/#4/#5 for follow-up. Feature lives on feat/per-state-activation-config (44f9736), not yet pushed.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `44f9736` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
