@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/swift/quality.md", "reason": "Review file layout/naming, Swift Testing coverage of the new decision cases, and that verify (build + tests) passes before commit."}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "Verify models/decision stay nonisolated + free of AppKit/SwiftUI; MainActor boundaries intact; decision fn remains pure."}
+{"file": ".trellis/spec/app/architecture.md", "reason": "Check single-source-of-truth/persistence integrity: configs[] + id references, makeDefault seeding + defaultConfigID, no dangling refs after delete/reassign."}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "Check native-container/Liquid-Glass usage (no hand-rolled glass), accessibility/keyboard, disabled placeholders, and the delete-confirm dialog wording (standard warning + dependents list)."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Audit the binding→config data flow end-to-end: delete reassignment, global-default deletion edge, live picker refresh."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Catch duplicated per-state Picker / config-picker logic across General table, BindingRow, GeneralSettingsView."}
