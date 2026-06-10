@@ -24,13 +24,23 @@ struct SettingsRootView: View {
             List(Pane.allCases, selection: $selection) { pane in
                 Label(pane.rawValue, systemImage: pane.icon).tag(pane)
             }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 215, max: 260)
+            .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 320)
             .toolbar(removing: .sidebarToggle)
         } detail: {
-            switch selection ?? .general {
-            case .general:
-                GeneralSettingsView()
-                    .navigationTitle("General")
+            Group {
+                switch selection ?? .general {
+                case .general:
+                    GeneralSettingsView()
+                        .navigationTitle("General")
+                }
+            }
+            // 零尺寸的占位 toolbar item：强制 SwiftUI 给窗口安装 NSToolbar。
+            // macOS 26 上若没有任何 toolbar item（标题不算），窗口不会创建 NSToolbar，
+            // 退化为 32pt 不透明标题栏，侧栏玻璃面板从标题栏下方才开始；装上 NSToolbar
+            // 后侧栏材质垫满整窗高度、红绿灯悬浮其上，标题 "General" 落在 detail 列
+            // 工具栏前部——即 System Settings 风格。该 item 宽度为 0，不会渲染玻璃容器。
+            .toolbar {
+                ToolbarItem { Color.clear.frame(width: 0, height: 0) }
             }
         }
         .frame(minWidth: 720, minHeight: 480)

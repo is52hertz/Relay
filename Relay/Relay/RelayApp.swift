@@ -44,6 +44,9 @@ struct RelayApp: App {
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentMinSize)
+        // 注意：不要加 .windowStyle(.hiddenTitleBar)——它只会让标题栏透明并隐藏标题，
+        // 不会让侧栏延伸到窗口顶部。「全高侧栏 + 悬浮红绿灯」由 SettingsRootView
+        // 里强制安装 NSToolbar 实现（详见该文件注释）。
         .commands {
             // 没有了 Settings 场景，自己提供标准的 "Settings…" 菜单项 + ⌘,。
             CommandGroup(replacing: .appSettings) { OpenSettingsButton() }
