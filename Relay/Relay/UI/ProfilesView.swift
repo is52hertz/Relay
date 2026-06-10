@@ -41,6 +41,9 @@ struct ProfilesView: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 230)
             .toolbar(removing: .sidebarToggle)
             .toolbar {
+                // flexible spacer 顶在前面，把 Add Profile 推到侧栏工具栏区的右端
+                // （侧栏右上角），而非默认贴着红绿灯的左端。
+                ToolbarSpacer(.flexible)
                 ToolbarItem {
                     Button(action: addProfile) {
                         Label("Add Profile", systemImage: "plus")
