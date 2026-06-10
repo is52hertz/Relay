@@ -51,7 +51,11 @@
 ## Native HIG containers
 
 - `NavigationSplitView` (sidebar list + detail). Sidebar uses `.contextMenu` (Set Active /
-  Rename / Delete) and `.alert` with a `TextField` for rename.
+  Rename / Delete). Rename is **inline** (a focused `TextField` in the row, not an alert).
+  Keyboard on the selected row: `.onDeleteCommand` deletes; `.onKeyPress(.return)` starts
+  inline rename; a hidden `.keyboardShortcut(.return, modifiers: .command)` button sets active;
+  a quick **second Return within ~300ms** of starting rename cancels it and sets active instead
+  (timing disambiguation via a `renameStartedAt` stamp). Esc / focus loss cancels rename.
 - `Form` with `.formStyle(.grouped)` for settings; `List` + `.toolbar` for the binding editor
   (toolbars work in a `Window`).
 - Empty / unavailable states use `ContentUnavailableView` ("No Apps", "No Profile Selected").
