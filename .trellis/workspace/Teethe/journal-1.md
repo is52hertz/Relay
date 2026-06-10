@@ -337,3 +337,39 @@ Made the placeholder actions real: Background column editable; minimize (Frontmo
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: Split Profiles main window and General Settings scene
+
+**Date**: 2026-06-10
+**Task**: Split Profiles main window and General Settings scene
+**Branch**: `feat/profiles-window-settings-split`
+
+### Summary
+
+Split the single TabView Window into a Profiles main Window plus a real Settings scene (General only, system Cmd+, / Settings menu). Added launch-source awareness: login-item launch stays menu-bar-only, explicit launch opens the Profiles window. Forced NSToolbar so the Settings sidebar extends under the traffic lights. Cleaned up old SettingsContainer/SettingsRootView naming, synced spec + notice, and added reset-relay-state.sh for first-launch testing.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8af24f4` | (see git log) |
+| `dcaa557` | (see git log) |
+| `694c154` | (see git log) |
+| `007df01` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

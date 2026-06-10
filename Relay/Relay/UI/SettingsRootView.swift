@@ -2,116 +2,47 @@
 //  SettingsRootView.swift
 //  Relay
 //
-//  设置/管理主界面：NavigationSplitView。侧栏 = Profile 列表（增/改名/删/设为 active），
-//  详情 = 该 Profile 的绑定编辑（BindingsDetailView）。
+//  设置主容器：System Settings 风格的双列侧栏（始终双列、无折叠按钮）。
+//  目前仅 General 一个面板；后续 Language / Shortcuts 等面板直接扩 Pane 即可。
 //
 
 import SwiftUI
 
 struct SettingsRootView: View {
-    @Environment(AppModel.self) private var model
-    @State private var selectedProfileID: UUID?
-    @State private var renamingProfileID: UUID?
-    @State private var renameText: String = ""
+    private enum Pane: String, CaseIterable, Identifiable {
+        case general = "General"
+        var id: Self { self }
+        var icon: String { "gearshape" }
+    }
+
+    @State private var selection: Pane? = .general
 
     var body: some View {
-        NavigationSplitView {
-            List(selection: $selectedProfileID) {
-                Section("Profiles") {
-                    ForEach(model.configuration.profiles) { profile in
-                        ProfileRow(
-                            name: profile.name,
-                            isActive: profile.id == model.configuration.activeProfileID
-                        )
-                        .tag(profile.id)
-                        .contextMenu {
-                            Button("Set as Active") { model.setActiveProfile(profile.id) }
-                                .disabled(profile.id == model.configuration.activeProfileID)
-                            Button("Rename…") { startRename(profile) }
-                            Divider()
-                            Button("Delete", role: .destructive) { delete(profile) }
-                        }
-                    }
-                }
+        // .constant(.doubleColumn)：侧栏始终可见，不允许折叠；
+        // .toolbar(removing: .sidebarToggle)：去掉系统的侧栏折叠按钮。
+        NavigationSplitView(columnVisibility: .constant(.doubleColumn)) {
+            List(Pane.allCases, selection: $selection) { pane in
+                Label(pane.rawValue, systemImage: pane.icon).tag(pane)
             }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 230)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addProfile) {
-                        Label("Add Profile", systemImage: "plus")
-                    }
-                    .help("Create a new profile")
-                }
-            }
+            .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 320)
+            .toolbar(removing: .sidebarToggle)
         } detail: {
-            if let profile = selectedProfile {
-                BindingsDetailView(profile: profile)
-            } else {
-                ContentUnavailableView(
-                    "No Profile Selected",
-                    systemImage: "square.stack.3d.up",
-                    description: Text("Select a profile, or create one.")
-                )
+            Group {
+                switch selection ?? .general {
+                case .general:
+                    GeneralSettingsView()
+                        .navigationTitle("General")
+                }
+            }
+            // 零尺寸的占位 toolbar item：强制 SwiftUI 给窗口安装 NSToolbar。
+            // macOS 26 上若没有任何 toolbar item（标题不算），窗口不会创建 NSToolbar，
+            // 退化为 32pt 不透明标题栏，侧栏玻璃面板从标题栏下方才开始；装上 NSToolbar
+            // 后侧栏材质垫满整窗高度、红绿灯悬浮其上，标题 "General" 落在 detail 列
+            // 工具栏前部——即 System Settings 风格。该 item 宽度为 0，不会渲染玻璃容器。
+            .toolbar {
+                ToolbarItem { Color.clear.frame(width: 0, height: 0) }
             }
         }
-        .frame(minWidth: 720, minHeight: 460)
-        .alert("Rename Profile", isPresented: renameAlertPresented) {
-            TextField("Name", text: $renameText)
-            Button("Rename") { commitRename() }
-            Button("Cancel", role: .cancel) { renamingProfileID = nil }
-        }
-    }
-
-    private var selectedProfile: Profile? {
-        let id = selectedProfileID ?? model.configuration.activeProfileID
-        return model.configuration.profiles.first { $0.id == id }
-    }
-
-    private var renameAlertPresented: Binding<Bool> {
-        Binding(
-            get: { renamingProfileID != nil },
-            set: { if !$0 { renamingProfileID = nil } }
-        )
-    }
-
-    private func addProfile() {
-        let profile = model.addProfile(name: "New Profile")
-        selectedProfileID = profile.id
-    }
-
-    private func delete(_ profile: Profile) {
-        if selectedProfileID == profile.id { selectedProfileID = nil }
-        model.deleteProfile(profile.id)
-    }
-
-    private func startRename(_ profile: Profile) {
-        renameText = profile.name
-        renamingProfileID = profile.id
-    }
-
-    private func commitRename() {
-        let trimmed = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let id = renamingProfileID, !trimmed.isEmpty {
-            model.renameProfile(id, to: trimmed)
-        }
-        renamingProfileID = nil
-    }
-}
-
-private struct ProfileRow: View {
-    let name: String
-    let isActive: Bool
-
-    var body: some View {
-        HStack {
-            Text(name)
-            Spacer()
-            if isActive {
-                Image(systemName: "bolt.fill")
-                    .font(.caption)
-                    .foregroundStyle(.tint)
-                    .accessibilityLabel("Active profile")
-            }
-        }
+        .frame(minWidth: 720, minHeight: 480)
     }
 }

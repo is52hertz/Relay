@@ -35,7 +35,13 @@ struct MenuBarContent: View {
             openWindow(id: RelayWindow.main)
             NSApplication.shared.activate()
         }
-        .keyboardShortcut(",", modifiers: .command)
+
+        // ⌘, 只有在 Relay 某个窗口为 key 时才会触发；从菜单栏 agent 直接开设置需要本项。
+        // 此处不绑 ⌘,（⌘, 归 CommandGroup）。
+        Button("Settings…") {
+            openWindow(id: RelayWindow.settings)
+            NSApplication.shared.activate()
+        }
 
         Divider()
 

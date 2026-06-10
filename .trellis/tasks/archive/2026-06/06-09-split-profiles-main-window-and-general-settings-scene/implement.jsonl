@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核心:Scenes 约定(Window vs Settings、.defaultLaunchBehavior、@Environment 注入、两向 Binding 经 AppModel)。本任务拆 Window/Settings 场景、改 MenuBarContent 都受此约束;注意现有条文'Do not put management UI in Settings / SettingsContainer'描述的正是被改动对象。"}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "§Login item & Dock icon:LoginItemService 包 SMAppService.mainApp、DockIconController 切 activationPolicy;PR2 的登录项 vs 显式启动检测、LSUIElement agent 行为依据。并重申仅公开 AppKit API。"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "组合根 AppController 接线 State↔Services、AppModel 单一可变源(所有 mutation 经其方法)。新增 AppDelegate/启动协调器、向两个场景注入 model/minimizer 时须遵此分层。"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "默认 MainActor 隔离(Swift 5 语言模式);AppDelegate / 启动协调器 / openWindow 桥接的并发与 actor 归属依据。"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "Swift 代码质量与命名约定;重命名 SettingsRootView、删 SettingsContainer、新增类型时遵循。"}
