@@ -7,6 +7,9 @@
   trigger (see below).
 - The **management UI (Profiles)** is a **`Window` (id `"main"`)** — `ProfilesView`
   (NavigationSplitView with the "Add Profile" toolbar), injecting `AppModel` + `TargetAppResolver`.
+  Like `SettingsRootView`, its sidebar is **pinned** (`columnVisibility: .constant(.doubleColumn)`,
+  `.toolbar(removing: .sidebarToggle)`) — no collapse button, which avoids the SwiftUI collapse
+  reflow where the leading toolbar buttons jump beside the traffic lights into a glass capsule.
   It must stay in a `Window`, **not** the `Settings` scene: Settings windows drop custom
   `.toolbar` buttons (Add App / Add Profile / Set Active go dead) and misbehave when the
   activation policy changes.

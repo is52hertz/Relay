@@ -16,7 +16,10 @@ struct ProfilesView: View {
     @State private var renameText: String = ""
 
     var body: some View {
-        NavigationSplitView {
+        // .constant(.doubleColumn)：侧栏始终可见，不允许折叠；
+        // 配合下方 .toolbar(removing: .sidebarToggle) 去掉系统折叠按钮，
+        // 避免折叠时工具栏按钮跳到红绿灯旁、玻璃胶囊浮现的突兀重排。
+        NavigationSplitView(columnVisibility: .constant(.doubleColumn)) {
             List(selection: $selectedProfileID) {
                 Section("Profiles") {
                     ForEach(model.configuration.profiles) { profile in
@@ -36,6 +39,7 @@ struct ProfilesView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 230)
+            .toolbar(removing: .sidebarToggle)
             .toolbar {
                 ToolbarItem {
                     Button(action: addProfile) {
