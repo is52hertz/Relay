@@ -406,3 +406,36 @@ Fixed the unnatural sidebar hide/show transition in the Profiles main window by 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Profile sidebar keyboard shortcuts + active-bolt styling
+
+**Date**: 2026-06-12
+**Task**: Profile sidebar keyboard shortcuts + active-bolt styling
+**Branch**: `fix/profile-uiux`
+
+### Summary
+
+Added keyboard-shortcut glyph hints to Profiles sidebar context menu (⌘↩ Set as Active, ↩ Rename, ⌫ Delete) aligned with real handlers; bindings detail list gains row selection + .onDeleteCommand to remove the selected binding via Delete/⌫, with BindingRow Remove showing ⌫; active-profile bolt switched to .body sizing. Verified via xcodebuild (BUILD SUCCEEDED).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `27da131` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
