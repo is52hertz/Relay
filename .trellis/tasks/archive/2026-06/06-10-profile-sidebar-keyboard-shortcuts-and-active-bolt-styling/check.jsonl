@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "验收：键盘快捷键、行内改名、闪电选中态白色/放大是否符合 UI 约定（语义色、无障碍、原生控件）"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "验收：新增键盘/计时逻辑的代码质量与风格"}
