@@ -39,11 +39,18 @@ struct ProfilesView: View {
                         )
                         .tag(profile.id)
                         .contextMenu {
+                            // .keyboardShortcut 仅用于在菜单项右侧显示对应字形提示，
+                            // 与下方真正的按键处理器（.onDeleteCommand / .onKeyPress(.return) / ⌘Return 隐藏按钮）一致：
                             Button("Set as Active") { model.setActiveProfile(profile.id) }
                                 .disabled(profile.id == model.configuration.activeProfileID)
+                                .keyboardShortcut(.return, modifiers: .command) // ⌘↩
+                            // 纯回车：.keyboardShortcut 默认带 .command，需显式传 modifiers: [] 才显示 ↩。
                             Button("Rename…") { startRename(profile) }
+                                .keyboardShortcut(.return, modifiers: []) // ↩
                             Divider()
+                            // .delete 即退格/删除键，显示 ⌫。
                             Button("Delete", role: .destructive) { delete(profile) }
+                                .keyboardShortcut(.delete, modifiers: []) // ⌫
                         }
                     }
                 }
@@ -166,7 +173,7 @@ struct ProfilesView: View {
 private struct ProfileRow: View {
     let name: String
     let isActive: Bool
-    // 该行是否被选中（整行变蓝时用于让闪电改白色）。
+    // 该行是否被选中，用于让 active 闪电在选中蓝底上变白。
     let isSelected: Bool
     // 该行是否处于行内改名态。
     let isRenaming: Bool
@@ -190,11 +197,10 @@ private struct ProfileRow: View {
             }
             Spacer()
             if isActive {
-                // 闪电统一放大（选中/未选中同尺寸）；颜色随选中态：选中行白色、否则 tint 蓝。
+                // 闪电统一放大（选中/未选中同尺寸）；颜色随选中态：选中蓝底时白色、否则 tint 蓝。
                 // 用 AnyShapeStyle 抹平 Color.white 与 .tint 的类型差异。
                 Image(systemName: "bolt.fill")
-                    .font(.title3)
-                    .imageScale(.large)
+                    .font(.body)
                     .foregroundStyle(isSelected ? AnyShapeStyle(.white) : AnyShapeStyle(.tint))
                     .accessibilityLabel("Active profile")
             }

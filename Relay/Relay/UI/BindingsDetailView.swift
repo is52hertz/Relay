@@ -15,6 +15,9 @@ struct BindingsDetailView: View {
     @Environment(AppModel.self) private var model
     @Environment(TargetAppResolver.self) private var resolver
 
+    // 当前选中的绑定行 id，供 .onDeleteCommand（Delete 键）删除选中绑定使用。
+    @State private var selectedBindingID: UUID?
+
     private var conflicts: Set<UUID> { HotkeyConflicts.duplicateBindingIDs(in: profile) }
     private var isActive: Bool { model.configuration.activeProfileID == profile.id }
 
@@ -29,7 +32,9 @@ struct BindingsDetailView: View {
                     Button("Add App…", action: addApp)
                 }
             } else {
-                List {
+                // selection 仅为支持「选中某行 → Delete 键删除」；
+                // BindingRow 由 binding.id Identifiable，List 按 id 选中。
+                List(selection: $selectedBindingID) {
                     ForEach(profile.bindings) { binding in
                         BindingRow(
                             binding: binding,
@@ -47,6 +52,9 @@ struct BindingsDetailView: View {
                         model.setBindings(reordered, for: profile.id)
                     }
                 }
+                // Delete/Backspace（List 聚焦且有选中行时触发）→ 删除选中绑定，
+                // 与 swipe/EditMode 的 .onDelete 共存。删后清空 selection。
+                .onDeleteCommand(perform: deleteSelectedBinding)
             }
         }
         .navigationTitle(profile.name)
@@ -68,6 +76,13 @@ struct BindingsDetailView: View {
                 .help("Make this the active profile")
             }
         }
+    }
+
+    // 删除当前选中的绑定（供 .onDeleteCommand 调用），删后清空 selection。
+    private func deleteSelectedBinding() {
+        guard let id = selectedBindingID else { return }
+        model.removeBindings([id], from: profile.id)
+        selectedBindingID = nil
     }
 
     private func addApp() {
