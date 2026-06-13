@@ -71,6 +71,7 @@
   },
   "enabledPlugins": {
     "swiftui-pro@swiftui-agent-skill": true,
-    "apple-skills@apple-skills": true
+    "apple-skills@apple-skills": true,
+    "swift-lsp@claude-plugins-official": true
   }
 }
