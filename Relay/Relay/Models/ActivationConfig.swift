@@ -21,9 +21,9 @@ nonisolated enum NotRunningAction: String, Codable, CaseIterable, Hashable, Send
 
     var displayName: String {
         switch self {
-        case .launch: "Launch & Focus"
-        case .launchWithoutFocus: "Launch in Background"
-        case .none: "Do Nothing"
+        case .launch: String(localized: "Launch & Focus")
+        case .launchWithoutFocus: String(localized: "Launch in Background")
+        case .none: String(localized: "Do Nothing")
         }
     }
 }
@@ -39,9 +39,9 @@ nonisolated enum BackgroundAction: String, Codable, CaseIterable, Hashable, Send
 
     var displayName: String {
         switch self {
-        case .focus: "Focus"
-        case .showWithoutFocus: "Show Without Focus"
-        case .minimize: "Minimize"
+        case .focus: String(localized: "Focus")
+        case .showWithoutFocus: String(localized: "Show Without Focus")
+        case .minimize: String(localized: "Minimize")
         }
     }
 
@@ -61,11 +61,11 @@ nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Senda
 
     var displayName: String {
         switch self {
-        case .returnToPrevious: "Return to Previous"
-        case .hide: "Hide"
-        case .quit: "Quit"
-        case .none: "Do Nothing"
-        case .minimize: "Minimize"
+        case .returnToPrevious: String(localized: "Return to Previous")
+        case .hide: String(localized: "Hide")
+        case .quit: String(localized: "Quit")
+        case .none: String(localized: "Do Nothing")
+        case .minimize: String(localized: "Minimize")
         }
     }
 

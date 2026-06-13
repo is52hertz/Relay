@@ -101,7 +101,7 @@ struct GeneralSettingsView: View {
     private var footerBar: some View {
         HStack(spacing: 0) {
             Button {
-                let new = model.addActivationConfig(name: "New Behavior")
+                let new = model.addActivationConfig(name: String(localized: "New Behavior"))
                 selection = [new.id]
             } label: {
                 Image(systemName: "plus")
@@ -151,7 +151,7 @@ struct GeneralSettingsView: View {
     /// 第二步：列出依赖（跨 Profile 的 `Profile › App`），并说明将回退到全局默认。
     private func deleteWarning(for config: ActivationConfig) -> String {
         let lines = dependentLabels(ofConfig: config.id)
-        let header = "These shortcuts use this behavior and will fall back to the default behavior:"
+        let header = String(localized: "These shortcuts use this behavior and will fall back to the default behavior:")
         return header + "\n\n" + lines.joined(separator: "\n")
     }
 

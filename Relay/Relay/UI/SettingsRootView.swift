@@ -11,8 +11,23 @@ import SwiftUI
 struct SettingsRootView: View {
     private enum Pane: String, CaseIterable, Identifiable {
         case general = "General"
+        case personalization = "Personalization"
         var id: Self { self }
-        var icon: String { "gearshape" }
+
+        /// 侧栏/标题用：必须是 LocalizedStringKey 才会本地化（rawValue 是 String，传给 Label 会被当 verbatim）。
+        var title: LocalizedStringKey {
+            switch self {
+            case .general: "General"
+            case .personalization: "Personalization"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .general: "gearshape"
+            case .personalization: "paintbrush"
+            }
+        }
     }
 
     @State private var selection: Pane? = .general
@@ -22,7 +37,7 @@ struct SettingsRootView: View {
         // .toolbar(removing: .sidebarToggle)：去掉系统的侧栏折叠按钮。
         NavigationSplitView(columnVisibility: .constant(.doubleColumn)) {
             List(Pane.allCases, selection: $selection) { pane in
-                Label(pane.rawValue, systemImage: pane.icon).tag(pane)
+                Label(pane.title, systemImage: pane.icon).tag(pane)
             }
             .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 320)
             .toolbar(removing: .sidebarToggle)
@@ -31,7 +46,10 @@ struct SettingsRootView: View {
                 switch selection ?? .general {
                 case .general:
                     GeneralSettingsView()
-                        .navigationTitle("General")
+                        .navigationTitle(Pane.general.title)
+                case .personalization:
+                    PersonalizationSettingsView()
+                        .navigationTitle(Pane.personalization.title)
                 }
             }
             // 零尺寸的占位 toolbar item：强制 SwiftUI 给窗口安装 NSToolbar。

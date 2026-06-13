@@ -15,6 +15,8 @@ final class AppController {
     let resolver: TargetAppResolver
     /// 暴露给 UI（编辑器选 Minimize 时延迟申请 Accessibility 权限）。
     let minimizer: WindowMinimizer
+    /// 暴露给设置 UI（个性化标签页的语言切换）。
+    let languageService: LanguageService
 
     private let frontmost: FrontmostTracker
     private let activation: AppActivationService
@@ -41,6 +43,7 @@ final class AppController {
         self.resolver = resolver
         self.frontmost = frontmost
         self.minimizer = minimizer
+        self.languageService = LanguageService()
         self.activation = activation
         self.registration = registration
         self.loginItem = loginItem
@@ -94,14 +97,10 @@ final class AppController {
         NSApplication.shared.activate()
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Minimize needs Accessibility access"
-        alert.informativeText = """
-        Relay can’t minimize the window until you grant Accessibility access. \
-        Open System Settings › Privacy & Security › Accessibility and enable Relay, \
-        then try again.
-        """
-        alert.addButton(withTitle: "Open System Settings")
-        alert.addButton(withTitle: "Later")
+        alert.messageText = String(localized: "Minimize needs Accessibility access")
+        alert.informativeText = String(localized: "Relay can’t minimize the window until you grant Accessibility access. Open System Settings › Privacy & Security › Accessibility and enable Relay, then try again.")
+        alert.addButton(withTitle: String(localized: "Open System Settings"))
+        alert.addButton(withTitle: String(localized: "Later"))
         if alert.runModal() == .alertFirstButtonReturn {
             let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
             NSWorkspace.shared.open(url)
