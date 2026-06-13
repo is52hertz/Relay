@@ -95,6 +95,18 @@ nonisolated struct ActivationConfig: Codable, Hashable, Sendable, Identifiable {
         self.background = background
         self.frontmost = frontmost
     }
+
+    /// 内置默认配置的本地化展示名：name 仍为四个已知种子名之一时返回本地化文案；
+    /// 用户改过名 / 自建配置 → 原样返回 name（用户数据不翻译）。
+    var localizedName: String {
+        switch name {
+        case "Return to Previous": String(localized: "Return to Previous")
+        case "Launch or Focus": String(localized: "Launch or Focus")
+        case "Toggle Hide": String(localized: "Toggle Hide")
+        case "Focus Only": String(localized: "Focus Only")
+        default: name
+        }
+    }
 }
 
 nonisolated extension ActivationConfig {

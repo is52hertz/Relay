@@ -42,7 +42,7 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .confirmationDialog(
-            "Delete “\(pendingDelete?.name ?? "")”?",
+            "Delete “\(pendingDelete?.localizedName ?? "")”?",
             isPresented: deleteDialogPresented,
             titleVisibility: .visible,
             presenting: pendingDelete
@@ -189,7 +189,7 @@ struct GeneralSettingsView: View {
 
     private func nameBinding(_ config: ActivationConfig) -> Binding<String> {
         Binding(
-            get: { config.name },
+            get: { config.localizedName },
             set: { model.renameActivationConfig(config.id, to: $0) }
         )
     }
