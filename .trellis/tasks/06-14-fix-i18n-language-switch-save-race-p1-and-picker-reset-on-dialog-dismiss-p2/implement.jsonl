@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/app/architecture.md", "reason": "P1 修法靠组合根 AppController 注入 flushBeforeRelaunch 闭包；遵守不用单例、AppModel 不依赖 AppKit、服务经组合根注入"}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "relaunch()/open -n/AppleLanguages 与去抖落盘属系统集成；理解 saveNow 与 willTerminate flush 的关系"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "flushBeforeRelaunch 为 @MainActor 闭包；LanguageService 保持 @MainActor"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "P2 改 confirmationDialog 的 isPresented Binding 与 selection 状态，遵循 SwiftUI 绑定/状态约定"}

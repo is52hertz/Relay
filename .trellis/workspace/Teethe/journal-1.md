@@ -439,3 +439,38 @@ Added keyboard-shortcut glyph hints to Profiles sidebar context menu (⌘↩ Set
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Localization (zh-Hans/zh-Hant) + Personalization settings tab
+
+**Date**: 2026-06-14
+**Task**: Localization (zh-Hans/zh-Hant) + Personalization settings tab
+**Branch**: `feat/localization-i18n`
+
+### Summary
+
+Localized Relay UI for zh-Hans/zh-Hant, added a Personalization settings tab for language selection, translated 'Record Shortcut' and localized preset behavior names. Added the 06-14 localization PRD + jsonl context.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0baf3f3` | (see git log) |
+| `99ce032` | (see git log) |
+| `0c9b185` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

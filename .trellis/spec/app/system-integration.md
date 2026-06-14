@@ -60,6 +60,22 @@ event-driven, zero idle cost. When the target is frontmost, activate `previous` 
   then `activate()` (so switching to `.accessory` doesn't hide the open window). Baseline is
   agent (`LSUIElement = YES`).
 
+## Language switch & relaunch (`LanguageService`)
+
+- The picked UI language is OS-side state: write the locale code to `AppleLanguages` (the app's
+  own `UserDefaults` domain), keep the user's pick in our own `RelayPreferredLanguage` key, and
+  `synchronize()` before relaunching. **Never** put language in the Codable JSON (avoid double
+  source of truth — same posture as `LoginItemService`).
+- Relaunch = spawn a fresh instance (`open -n <bundlePath>`) then `NSApp.terminate(nil)`; the new
+  instance reads the updated `AppleLanguages` on launch.
+- **Flush `AppModel` synchronously BEFORE `open -n`**, not just via the `willTerminate` handler.
+  The debounced save (400 ms) plus the terminate-time flush race the new instance's disk read:
+  `open -n` can boot and load stale JSON before the old instance flushes, then overwrite the
+  just-saved edit → lost data (this was a real P1 bug). `LanguageService` takes an injected
+  `flushBeforeRelaunch: @MainActor () -> Void` from the composition root (`AppController` passes
+  `{ [model] in model.saveNow() }`) and calls it first in `relaunch()`; it must not depend on
+  `AppModel`'s concrete type.
+
 ## Build / signing posture (don't regress)
 
 `ENABLE_APP_SANDBOX = NO` (the app controls other apps), `ENABLE_HARDENED_RUNTIME = YES`,

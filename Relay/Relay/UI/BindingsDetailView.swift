@@ -98,8 +98,8 @@ struct BindingsDetailView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
-        panel.prompt = "Add"
-        panel.message = "Choose an application to add to this profile."
+        panel.prompt = String(localized: "Add")
+        panel.message = String(localized: "Choose an application to add to this profile.")
         guard panel.runModal() == .OK, let url = panel.url else { return nil }
         return resolver.makeTargetApp(from: url)
     }

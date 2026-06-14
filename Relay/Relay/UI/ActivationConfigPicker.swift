@@ -16,7 +16,7 @@ struct ActivationConfigPicker: View {
     var body: some View {
         Picker("Behavior", selection: selection) {
             ForEach(model.activationConfigs) { config in
-                Text(config.name).tag(config.id)
+                Text(config.localizedName).tag(config.id)
             }
         }
     }

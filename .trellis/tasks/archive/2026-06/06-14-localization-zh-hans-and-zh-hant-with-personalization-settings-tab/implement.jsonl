@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "新增个性化标签页 + 语言 Picker，遵循 SwiftUI/设置窗口约定"}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "AppleLanguages 覆盖 + 重启、String Catalog 与 bundle 本地化属系统集成"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "LanguageService 经 AppController 注入、不用单例、不写进 Codable JSON"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "LanguageService 为 @MainActor；ActivationConfig 保持 nonisolated/no-SwiftUI"}

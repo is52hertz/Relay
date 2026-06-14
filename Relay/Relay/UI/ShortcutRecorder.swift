@@ -57,7 +57,7 @@ struct ShortcutRecorder: NSViewRepresentable {
             isRecording = true
             // 录制期间停用全局热键，否则按下的组合会被已注册的热键截走（触发别的 App），录不进来。
             KeyboardShortcuts.isEnabled = false
-            button?.title = "Type shortcut…"
+            button?.title = String(localized: "Type shortcut…")
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
                 MainActor.assumeIsolated {
                     guard let self else { return event }
@@ -110,7 +110,7 @@ struct ShortcutRecorder: NSViewRepresentable {
         }
 
         func refreshTitle() {
-            button?.title = parent.hotkey?.displayString ?? "Record Shortcut"
+            button?.title = parent.hotkey?.displayString ?? String(localized: "Record Shortcut")
         }
 
         deinit {
