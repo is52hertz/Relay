@@ -544,3 +544,37 @@ Fixed a codex P2 on PR #12: LanguageService.relaunch() launched the replacement 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: README group (en/zh-Hans/zh-Hant) + GPL LICENSE + first preview release v0.1.0-preview.1
+
+**Date**: 2026-06-15
+**Task**: README group (en/zh-Hans/zh-Hant) + GPL LICENSE + first preview release v0.1.0-preview.1
+**Branch**: `main`
+
+### Summary
+
+Authored a 3-language README group (English authoritative + zh-Hans + zh-Hant), added GPL-3.0 LICENSE (FSF canonical, copied from sibling VideoPlayer repo), and docs/icon.png (user-provided 512x512). Feature claims traced to code. Merged via PR #13. Then published the first preview GitHub release v0.1.0-preview.1 (pre-release, target main): Release build -> codesigned Relay.app -> Relay-v0.1.0-preview.1.dmg (3.4MB, verified) -> gh release create with concise English notes (feature summary + launch instructions). Decisions: 3 languages (match app localization), tag v0.1.0-preview.1, attach .dmg, version-less Swift badge (project uses Swift 5 language mode).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ec289ed` | (see git log) |
+| `7a971ad` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
