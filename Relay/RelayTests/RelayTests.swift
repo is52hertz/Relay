@@ -49,6 +49,24 @@ struct RelayTests {
         #expect(config.activationConfigs.first?.name == "Return to Previous")
     }
 
+    @Test func appSettingsDecodesLegacyJSONMissingMenuBarIcon() throws {
+        // 旧版本（schemaVersion 2）写出的 settings 没有 menuBarIconName 键。合成 Decodable 会因缺键
+        // 整体抛错 → PersistenceStore.load() 返回 nil → makeDefault() 清空用户数据。自定义 init(from:)
+        // 必须容错：缺键回退默认 "command"，且不抛错。此测试锁住该数据安全保证。
+        let legacyJSON = """
+        {
+          "showDockIcon": true,
+          "launchAtLogin": true,
+          "defaultConfigID": "\(UUID().uuidString)"
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: legacyJSON)
+        #expect(decoded.menuBarIconName == AppSettings.defaultMenuBarIconName)
+        #expect(decoded.showDockIcon == true)
+        #expect(decoded.launchAtLogin == true)
+    }
+
     @Test @MainActor func persistenceStoreSaveLoadRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("relay-test-\(UUID().uuidString)", isDirectory: true)
