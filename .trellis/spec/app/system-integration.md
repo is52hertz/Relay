@@ -68,13 +68,20 @@ event-driven, zero idle cost. When the target is frontmost, activate `previous` 
   source of truth — same posture as `LoginItemService`).
 - Relaunch = spawn a fresh instance (`open -n <bundlePath>`) then `NSApp.terminate(nil)`; the new
   instance reads the updated `AppleLanguages` on launch.
-- **Flush `AppModel` synchronously BEFORE `open -n`**, not just via the `willTerminate` handler.
-  The debounced save (400 ms) plus the terminate-time flush race the new instance's disk read:
-  `open -n` can boot and load stale JSON before the old instance flushes, then overwrite the
-  just-saved edit → lost data (this was a real P1 bug). `LanguageService` takes an injected
-  `flushBeforeRelaunch: @MainActor () -> Void` from the composition root (`AppController` passes
-  `{ [model] in model.saveNow() }`) and calls it first in `relaunch()`; it must not depend on
-  `AppModel`'s concrete type.
+- **Do two things synchronously BEFORE `open -n`**, via a single injected
+  `beforeRelaunch: @MainActor () -> Void` hook from the composition root (`AppController` passes
+  `{ [model, registration] in model.saveNow(); registration.deactivateAll() }`).
+  `LanguageService` calls it first in `relaunch()` and must not depend on the concrete types of
+  `AppModel` / `HotkeyRegistrationService` — only the closure.
+  1. **Flush `AppModel`** (not just via the `willTerminate` handler): the debounced save (400 ms)
+     plus the terminate-time flush race the new instance's disk read — `open -n` can boot and load
+     stale JSON before the old instance flushes, then overwrite the just-saved edit → lost data
+     (real P1 bug).
+  2. **Release global hotkeys** (`deactivateAll()`): `NSApp.terminate` is async, so without this
+     the new instance registers its Carbon hotkeys while the old process still owns the same combos.
+     Cross-process `RegisterEventHotKey` handoff is not guaranteed, `KeyboardShortcuts` swallows
+     registration failures (see above), and there is no retry — so hotkeys could come back dead
+     after a language switch (real P2 bug). Releasing in the old process first removes the overlap.
 
 ## Build / signing posture (don't regress)
 
