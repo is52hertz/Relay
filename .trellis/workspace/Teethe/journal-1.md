@@ -439,3 +439,108 @@ Added keyboard-shortcut glyph hints to Profiles sidebar context menu (⌘↩ Set
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Localization (zh-Hans/zh-Hant) + Personalization settings tab
+
+**Date**: 2026-06-14
+**Task**: Localization (zh-Hans/zh-Hant) + Personalization settings tab
+**Branch**: `feat/localization-i18n`
+
+### Summary
+
+Localized Relay UI for zh-Hans/zh-Hant, added a Personalization settings tab for language selection, translated 'Record Shortcut' and localized preset behavior names. Added the 06-14 localization PRD + jsonl context.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0baf3f3` | (see git log) |
+| `99ce032` | (see git log) |
+| `0c9b185` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 12: Fix PR #11 review findings: language-switch save race (P1) + picker reset on dialog dismiss (P2)
+
+**Date**: 2026-06-14
+**Task**: Fix PR #11 review findings: language-switch save race (P1) + picker reset on dialog dismiss (P2)
+**Branch**: `feat/localization-i18n`
+
+### Summary
+
+Fixed two codex review findings on PR #11. P1: LanguageService now flushes AppModel synchronously (injected flushBeforeRelaunch closure from AppController) before 'open -n', closing a data-loss race. P2: moved picker revert into the dialogPresented binding's close branch so all dismissal paths reset selection. Recorded the relaunch-flush invariant in the system-integration spec. Build passed; codex re-review (commit b4efcc8) found no major issues.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `84b88e6` | (see git log) |
+| `005a2dd` | (see git log) |
+| `b4efcc8` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 13: Fix PR #12 review finding: release global hotkeys before language-switch relaunch (P2)
+
+**Date**: 2026-06-15
+**Task**: Fix PR #12 review finding: release global hotkeys before language-switch relaunch (P2)
+**Branch**: `fix/profile-uiux`
+
+### Summary
+
+Fixed a codex P2 on PR #12: LanguageService.relaunch() launched the replacement instance before releasing global hotkeys, so the new process could register Carbon hotkeys while the old one still owned them (KeyboardShortcuts swallows registration failures, no retry) -> hotkeys could be dead after a language switch. Generalized the pre-relaunch hook (flushBeforeRelaunch -> beforeRelaunch); AppController now composes model.saveNow() + registration.deactivateAll() before open -n. Updated the relaunch invariant in the system-integration spec. Build passed; codex re-review (a953eda) found no major issues. Also cherry-picked session-12 bookkeeping (06-14-fix archive + journal) onto fix/profile-uiux to repair branch divergence so main gets a complete journal via PR #12.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f8dfc90` | (see git log) |
+| `aa309df` | (see git log) |
+| `a953eda` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

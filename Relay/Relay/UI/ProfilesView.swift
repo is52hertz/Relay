@@ -116,7 +116,7 @@ struct ProfilesView: View {
     }
 
     private func addProfile() {
-        let profile = model.addProfile(name: "New Profile")
+        let profile = model.addProfile(name: String(localized: "New Profile"))
         selectedProfileID = profile.id
     }
 

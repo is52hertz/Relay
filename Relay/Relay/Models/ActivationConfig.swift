@@ -21,9 +21,9 @@ nonisolated enum NotRunningAction: String, Codable, CaseIterable, Hashable, Send
 
     var displayName: String {
         switch self {
-        case .launch: "Launch & Focus"
-        case .launchWithoutFocus: "Launch in Background"
-        case .none: "Do Nothing"
+        case .launch: String(localized: "Launch & Focus")
+        case .launchWithoutFocus: String(localized: "Launch in Background")
+        case .none: String(localized: "Do Nothing")
         }
     }
 }
@@ -39,9 +39,9 @@ nonisolated enum BackgroundAction: String, Codable, CaseIterable, Hashable, Send
 
     var displayName: String {
         switch self {
-        case .focus: "Focus"
-        case .showWithoutFocus: "Show Without Focus"
-        case .minimize: "Minimize"
+        case .focus: String(localized: "Focus")
+        case .showWithoutFocus: String(localized: "Show Without Focus")
+        case .minimize: String(localized: "Minimize")
         }
     }
 
@@ -61,11 +61,11 @@ nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Senda
 
     var displayName: String {
         switch self {
-        case .returnToPrevious: "Return to Previous"
-        case .hide: "Hide"
-        case .quit: "Quit"
-        case .none: "Do Nothing"
-        case .minimize: "Minimize"
+        case .returnToPrevious: String(localized: "Return to Previous")
+        case .hide: String(localized: "Hide")
+        case .quit: String(localized: "Quit")
+        case .none: String(localized: "Do Nothing")
+        case .minimize: String(localized: "Minimize")
         }
     }
 
@@ -94,6 +94,18 @@ nonisolated struct ActivationConfig: Codable, Hashable, Sendable, Identifiable {
         self.notRunning = notRunning
         self.background = background
         self.frontmost = frontmost
+    }
+
+    /// 内置默认配置的本地化展示名：name 仍为四个已知种子名之一时返回本地化文案；
+    /// 用户改过名 / 自建配置 → 原样返回 name（用户数据不翻译）。
+    var localizedName: String {
+        switch name {
+        case "Return to Previous": String(localized: "Return to Previous")
+        case "Launch or Focus": String(localized: "Launch or Focus")
+        case "Toggle Hide": String(localized: "Toggle Hide")
+        case "Focus Only": String(localized: "Focus Only")
+        default: name
+        }
     }
 }
 

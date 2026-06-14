@@ -41,6 +41,7 @@ struct RelayApp: App {
             SettingsRootView()
                 .environment(controller.model)
                 .environment(controller.minimizer)
+                .environment(controller.languageService)
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentMinSize)
