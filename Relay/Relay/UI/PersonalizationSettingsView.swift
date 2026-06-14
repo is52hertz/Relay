@@ -19,7 +19,7 @@ struct PersonalizationSettingsView: View {
     /// 待确认切换的目标语言（非 nil 时弹重启确认）。
     @State private var pending: AppLanguage?
 
-    /// 自定义 SF Symbol 输入框内容（onAppear 预填当前图标名）。
+    /// 自定义 SF Symbol 输入框内容（留空显示占位符；输入有效名后点 Apply 写入设置）。
     @State private var customInput: String = ""
     /// 上次自定义输入是否无效（无效时提示且不写入设置）。
     @State private var customInvalid: Bool = false
@@ -32,7 +32,6 @@ struct PersonalizationSettingsView: View {
         .formStyle(.grouped)
         .onAppear {
             selection = language.current
-            customInput = model.settings.menuBarIconName
         }
         .confirmationDialog(
             "Restart Relay to change language?",
@@ -71,14 +70,17 @@ struct PersonalizationSettingsView: View {
 
         Section {
             HStack(spacing: 8) {
-                // 实时预览：当前输入有效则显示其图标，否则显示当前生效图标。
-                Image(systemName: customPreviewName)
-                    .imageScale(.large)
-                    .foregroundStyle(customInvalid ? .secondary : .primary)
-                    .frame(width: 22)
-                TextField("SF Symbol name", text: $customInput)
-                    .textFieldStyle(.roundedBorder)
+                // 无边框、占位符提示——分组表单原生输入样式；不预填值，一眼是输入框。
+                TextField("SF Symbol name", text: $customInput, prompt: Text(verbatim: "star.fill"))
+                    .labelsHidden()
                     .onSubmit(applyCustomSymbol)
+                // 实时预览：仅在有输入时出现于行尾（当前生效图标由色块选中环 / 预设区体现）。
+                if !trimmedCustom.isEmpty {
+                    Image(systemName: customPreviewName)
+                        .imageScale(.large)
+                        .foregroundStyle(customInvalid ? .secondary : .primary)
+                        .accessibilityHidden(true)
+                }
                 Button("Apply", action: applyCustomSymbol)
                     .disabled(trimmedCustom.isEmpty)
             }
