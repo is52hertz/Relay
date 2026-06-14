@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 11
+- **Total Sessions**: 12
 - **Last Active**: 2026-06-14
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~476 | Active |
+| `journal-1.md` | ~511 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 12 | 2026-06-14 | Fix PR #11 review findings: language-switch save race (P1) + picker reset on dialog dismiss (P2) | `84b88e6`, `005a2dd`, `b4efcc8` | `feat/localization-i18n` |
 | 11 | 2026-06-14 | Localization (zh-Hans/zh-Hant) + Personalization settings tab | `0baf3f3`, `99ce032`, `0c9b185` | `feat/localization-i18n` |
 | 10 | 2026-06-12 | Profile sidebar keyboard shortcuts + active-bolt styling | `27da131` | `fix/profile-uiux` |
 | 9 | 2026-06-10 | Pin Profiles sidebar (always visible, no collapse toggle) | `ce9ffad` | `feat/profiles-sidebar-always-visible` |

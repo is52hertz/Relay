@@ -474,3 +474,38 @@ Localized Relay UI for zh-Hans/zh-Hant, added a Personalization settings tab for
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: Fix PR #11 review findings: language-switch save race (P1) + picker reset on dialog dismiss (P2)
+
+**Date**: 2026-06-14
+**Task**: Fix PR #11 review findings: language-switch save race (P1) + picker reset on dialog dismiss (P2)
+**Branch**: `feat/localization-i18n`
+
+### Summary
+
+Fixed two codex review findings on PR #11. P1: LanguageService now flushes AppModel synchronously (injected flushBeforeRelaunch closure from AppController) before 'open -n', closing a data-loss race. P2: moved picker revert into the dialogPresented binding's close branch so all dismissal paths reset selection. Recorded the relaunch-flush invariant in the system-integration spec. Build passed; codex re-review (commit b4efcc8) found no major issues.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `84b88e6` | (see git log) |
+| `005a2dd` | (see git log) |
+| `b4efcc8` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
