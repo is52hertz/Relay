@@ -43,7 +43,11 @@ final class AppController {
         self.resolver = resolver
         self.frontmost = frontmost
         self.minimizer = minimizer
-        self.languageService = LanguageService(flushBeforeRelaunch: { [model] in model.saveNow() })
+        // 重启前两件副作用须在 `open -n` 之前完成：flush 落盘（P1）+ 释放全局热键（P2，消除新旧进程重叠持有 Carbon 热键的窗口）。顺序不敏感，flush 在前保留 P1 语义清晰。
+        self.languageService = LanguageService(beforeRelaunch: { [model, registration] in
+            model.saveNow()
+            registration.deactivateAll()
+        })
         self.activation = activation
         self.registration = registration
         self.loginItem = loginItem

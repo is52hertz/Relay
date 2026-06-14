@@ -49,12 +49,13 @@ final class LanguageService {
     /// 系统 per-app 语言覆盖键（写入 App 自身偏好域即覆盖本 App 启动语言）。
     private let appleLanguagesKey = "AppleLanguages"
 
-    /// 重启前同步 flush 配置落盘的钩子（组合根注入 model.saveNow，同 hotkeysDidChange 的惯例）。
-    /// 不直接持有 AppModel——只经闭包，保持本服务不依赖其具体类型。
-    @ObservationIgnored private let flushBeforeRelaunch: @MainActor () -> Void
+    /// 重启前同步执行的副作用钩子（组合根注入，同 hotkeysDidChange 的惯例）。
+    /// 现承担两件必须发生在 `open -n` 之前的事：flush 配置落盘（P1）+ 释放全局热键（P2）。
+    /// 不直接持有 AppModel / HotkeyRegistrationService——只经闭包，保持本服务不依赖其具体类型。
+    @ObservationIgnored private let beforeRelaunch: @MainActor () -> Void
 
-    init(flushBeforeRelaunch: @escaping @MainActor () -> Void = {}) {
-        self.flushBeforeRelaunch = flushBeforeRelaunch
+    init(beforeRelaunch: @escaping @MainActor () -> Void = {}) {
+        self.beforeRelaunch = beforeRelaunch
     }
 
     /// 当前选择：读我方偏好键；无值或不识别 → `.system`。
@@ -79,10 +80,13 @@ final class LanguageService {
     }
 
     /// 拉起一个全新实例再终止当前实例：新实例启动时读到更新后的 AppleLanguages。
-    /// 必须在 `open -n` 之前同步 flush 配置：否则新实例可能在旧实例 `willTerminate` flush 前
-    /// 就读盘拿到旧 JSON（编辑仍在 400ms 去抖窗口内），新实例后续一保存即覆盖刚 flush 的编辑 → 丢数据。
+    /// `open -n` 之前必须同步完成两件事（由 beforeRelaunch 钩子统一执行）：
+    /// (1) flush 配置落盘（P1）——否则新实例可能在旧实例 `willTerminate` flush 前就读盘拿到旧 JSON
+    ///     （编辑仍在 400ms 去抖窗口内），新实例后续一保存即覆盖刚 flush 的编辑 → 丢数据；
+    /// (2) 释放全局热键（P2）——否则旧进程 terminate 是异步、尚未完成时新实例已注册同一组 Carbon 热键，
+    ///     跨进程注册交接语义不保证 + KeyboardShortcuts 吞掉注册失败且无重试 → 切语言后全局热键可能失效。
     private func relaunch() {
-        flushBeforeRelaunch()
+        beforeRelaunch()
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
         task.arguments = ["-n", Bundle.main.bundlePath]
