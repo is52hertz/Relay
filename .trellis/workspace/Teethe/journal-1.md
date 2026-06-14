@@ -509,3 +509,38 @@ Fixed two codex review findings on PR #11. P1: LanguageService now flushes AppMo
 ### Next Steps
 
 - None - task complete
+
+
+## Session 13: Fix PR #12 review finding: release global hotkeys before language-switch relaunch (P2)
+
+**Date**: 2026-06-15
+**Task**: Fix PR #12 review finding: release global hotkeys before language-switch relaunch (P2)
+**Branch**: `fix/profile-uiux`
+
+### Summary
+
+Fixed a codex P2 on PR #12: LanguageService.relaunch() launched the replacement instance before releasing global hotkeys, so the new process could register Carbon hotkeys while the old one still owned them (KeyboardShortcuts swallows registration failures, no retry) -> hotkeys could be dead after a language switch. Generalized the pre-relaunch hook (flushBeforeRelaunch -> beforeRelaunch); AppController now composes model.saveNow() + registration.deactivateAll() before open -n. Updated the relaunch invariant in the system-integration spec. Build passed; codex re-review (a953eda) found no major issues. Also cherry-picked session-12 bookkeeping (06-14-fix archive + journal) onto fix/profile-uiux to repair branch divergence so main gets a complete journal via PR #12.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f8dfc90` | (see git log) |
+| `aa309df` | (see git log) |
+| `a953eda` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
