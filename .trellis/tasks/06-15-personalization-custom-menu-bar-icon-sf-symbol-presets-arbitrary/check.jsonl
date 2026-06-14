@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/app/architecture.md", "reason": "Verify model stays Foundation-only, mutation via AppModel.settings setter, schemaVersion bumped, backward-compat decode"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "Verify HIG Form usage, reactive label, safe-degradation on invalid SF Symbol, accessibility labels on icon-only controls"}
