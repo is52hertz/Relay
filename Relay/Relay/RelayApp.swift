@@ -18,7 +18,8 @@ struct RelayApp: App {
         } label: {
             // 用自定义 label（常驻渲染）读取 openWindow 并响应启动协调器：
             // didFinishLaunching 在 body 首次求值、菜单栏 label 渲染之后翻转标志。
-            LaunchTriggerLabel(launch: appDelegate.launch)
+            // 同时传入 model：label 在 body 内读 settings.menuBarIconName，个性化页改图标时实时刷新。
+            LaunchTriggerLabel(launch: appDelegate.launch, model: controller.model)
         }
 
         // 主窗口 = Profiles 管理（NavigationSplitView + Add Profile 工具栏）。
@@ -73,13 +74,15 @@ private struct OpenSettingsButton: View {
     }
 }
 
-/// 菜单栏的常驻 label：监听 LaunchCoordinator，按启动来源程序化打开主窗口。
+/// 菜单栏的常驻 label：渲染用户选择的图标，并监听 LaunchCoordinator 按启动来源程序化打开主窗口。
 private struct LaunchTriggerLabel: View {
     @Environment(\.openWindow) private var openWindow
     let launch: LaunchCoordinator
+    /// SoT：在 body 内读取 settings.menuBarIconName，@Observable 变更会重渲染该 label → 状态项实时换图标。
+    let model: AppModel
 
     var body: some View {
-        Image(systemName: "command")
+        Image(systemName: resolvedIconName)
             // onChange 覆盖「label 已渲染后标志翻转」的常规时序；
             // onAppear 覆盖「didFinishLaunching 在 label 首次渲染前就翻转标志」的竞态
             // （MenuBarExtra label 渲染时机较晚，onChange 只在变化时触发、会漏掉已为 true 的初值）。
@@ -89,6 +92,14 @@ private struct LaunchTriggerLabel: View {
             .onAppear {
                 if launch.shouldShowMainWindow { showMainWindow() }
             }
+    }
+
+    /// 防御性兜底：存储名若无法解析为有效 SF Symbol，回退默认，状态项绝不空白。
+    private var resolvedIconName: String {
+        let name = model.settings.menuBarIconName
+        return NSImage(systemSymbolName: name, accessibilityDescription: nil) != nil
+            ? name
+            : AppSettings.defaultMenuBarIconName
     }
 
     private func showMainWindow() {

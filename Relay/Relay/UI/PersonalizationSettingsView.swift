@@ -2,13 +2,16 @@
 //  PersonalizationSettingsView.swift
 //  Relay
 //
-//  个性化设置：界面语言选择（跟随系统 / 简体 / 繁體 / English）。
-//  切换为新语言时弹确认 → 经 LanguageService 写入 AppleLanguages 并重启生效。
+//  个性化设置：
+//  - 菜单栏图标：预设 SF Symbol 色块行（点选即生效），或在自定义框输入任意符号名（带有效性校验）。
+//  - 界面语言：跟随系统 / 简体 / 繁體 / English；切换时弹确认 → 经 LanguageService 重启生效。
 //
 
 import SwiftUI
+import AppKit
 
 struct PersonalizationSettingsView: View {
+    @Environment(AppModel.self) private var model
     @Environment(LanguageService.self) private var language
 
     /// 选择器回显的当前选择；onAppear 同步为 LanguageService.current。
@@ -16,21 +19,20 @@ struct PersonalizationSettingsView: View {
     /// 待确认切换的目标语言（非 nil 时弹重启确认）。
     @State private var pending: AppLanguage?
 
+    /// 自定义 SF Symbol 输入框内容（留空显示占位符；输入有效名后点 Apply 写入设置）。
+    @State private var customInput: String = ""
+    /// 上次自定义输入是否无效（无效时提示且不写入设置）。
+    @State private var customInvalid: Bool = false
+
     var body: some View {
         Form {
-            Section {
-                Picker("Language", selection: languageBinding) {
-                    ForEach(AppLanguage.allCases) { option in
-                        // displayName 已是最终展示串（自名 / 已本地化），用变量初始化器即可（不二次本地化）。
-                        Text(option.displayName).tag(option)
-                    }
-                }
-            } footer: {
-                Text("Relay restarts to apply a new language.")
-            }
+            menuBarIconSection
+            languageSection
         }
         .formStyle(.grouped)
-        .onAppear { selection = language.current }
+        .onAppear {
+            selection = language.current
+        }
         .confirmationDialog(
             "Restart Relay to change language?",
             isPresented: dialogPresented,
@@ -44,6 +46,141 @@ struct PersonalizationSettingsView: View {
             Text("Relay needs to restart to switch languages. Your settings are saved.")
         }
     }
+
+    // MARK: - 菜单栏图标
+
+    @ViewBuilder
+    private var menuBarIconSection: some View {
+        Section {
+            LabeledContent("Current") {
+                Image(systemName: model.settings.menuBarIconName)
+                    .imageScale(.large)
+                    .accessibilityLabel("Current menu bar icon")
+            }
+            HStack(spacing: 10) {
+                ForEach(AppSettings.menuBarIconPresets, id: \.self) { name in
+                    swatch(name)
+                }
+            }
+        } header: {
+            Text("Menu Bar Icon")
+        } footer: {
+            Text("Pick a preset, or enter any SF Symbol below. Changes apply immediately.")
+        }
+
+        Section {
+            HStack(spacing: 8) {
+                // 无边框、占位符提示——分组表单原生输入样式；不预填值，一眼是输入框。
+                TextField("SF Symbol name", text: $customInput, prompt: Text(verbatim: "star.fill"))
+                    .labelsHidden()
+                    .onSubmit(applyCustomSymbol)
+                // 实时预览：仅在有输入时出现于行尾（当前生效图标由色块选中环 / 预设区体现）。
+                if !trimmedCustom.isEmpty {
+                    Image(systemName: customPreviewName)
+                        .imageScale(.large)
+                        .foregroundStyle(customInvalid ? .secondary : .primary)
+                        .accessibilityHidden(true)
+                }
+                Button("Apply", action: applyCustomSymbol)
+                    .disabled(trimmedCustom.isEmpty)
+            }
+            if customInvalid {
+                Label("Not a valid SF Symbol name.", systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .font(.caption)
+            }
+        } header: {
+            Text("Custom SF Symbol")
+        } footer: {
+            Text("Type any SF Symbol name (for example star.fill). Invalid names are ignored, so the icon never goes blank.")
+        }
+    }
+
+    /// 预设的单个图标色块（选中态：高亮底 + 强调色描边 + VoiceOver isSelected）。
+    private func swatch(_ name: String) -> some View {
+        let isSelected = model.settings.menuBarIconName == name
+        return Button {
+            iconBinding.wrappedValue = name
+        } label: {
+            Image(systemName: name)
+                .imageScale(.large)
+                .frame(width: 40, height: 32)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(isSelected ? Color.accentColor.opacity(0.18) : Color.secondary.opacity(0.08))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(
+                            isSelected ? Color.accentColor : Color.secondary.opacity(0.25),
+                            lineWidth: isSelected ? 2 : 1
+                        )
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(name)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    // MARK: - 语言
+
+    private var languageSection: some View {
+        Section {
+            Picker("Language", selection: languageBinding) {
+                ForEach(AppLanguage.allCases) { option in
+                    // displayName 已是最终展示串（自名 / 已本地化），用变量初始化器即可（不二次本地化）。
+                    Text(option.displayName).tag(option)
+                }
+            }
+        } footer: {
+            Text("Relay restarts to apply a new language.")
+        }
+    }
+
+    // MARK: - 菜单栏图标 bindings / helpers
+
+    /// 写回 model.settings（经 AppModel setter 去抖落盘 + settingsDidChange）。
+    private var iconBinding: Binding<String> {
+        Binding(
+            get: { model.settings.menuBarIconName },
+            set: { newValue in
+                var settings = model.settings
+                settings.menuBarIconName = newValue
+                model.settings = settings
+                // 选了预设后让自定义框回显，保持一致。
+                customInput = newValue
+                customInvalid = false
+            }
+        )
+    }
+
+    private var trimmedCustom: String {
+        customInput.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 预览用：当前输入有效→预览输入图标；否则回退到当前生效图标。
+    private var customPreviewName: String {
+        isValidSymbol(trimmedCustom) ? trimmedCustom : model.settings.menuBarIconName
+    }
+
+    /// 应用自定义符号：有效则写入设置，无效则提示且不改设置（菜单栏不空白）。
+    private func applyCustomSymbol() {
+        let name = trimmedCustom
+        guard !name.isEmpty else { return }
+        if isValidSymbol(name) {
+            customInvalid = false
+            iconBinding.wrappedValue = name
+        } else {
+            customInvalid = true
+        }
+    }
+
+    /// SF Symbol 有效性校验（AppKit，仅视图层使用；模型层不引 AppKit）。
+    private func isValidSymbol(_ name: String) -> Bool {
+        !name.isEmpty && NSImage(systemSymbolName: name, accessibilityDescription: nil) != nil
+    }
+
+    // MARK: - 语言 bindings
 
     /// 选新语言 → 记 pending 弹确认；选回当前语言 → 不弹。
     private var languageBinding: Binding<AppLanguage> {

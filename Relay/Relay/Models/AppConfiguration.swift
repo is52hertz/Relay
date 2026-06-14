@@ -15,7 +15,7 @@ nonisolated struct AppConfiguration: Codable, Hashable, Sendable {
     var activationConfigs: [ActivationConfig]
     var settings: AppSettings
 
-    static let currentSchemaVersion = 2
+    static let currentSchemaVersion = 3
 
     init(
         schemaVersion: Int = AppConfiguration.currentSchemaVersion,
@@ -52,14 +52,38 @@ nonisolated struct AppSettings: Codable, Hashable, Sendable {
     var launchAtLogin: Bool
     /// 新增绑定时默认引用的激活配置 id（指向 AppConfiguration.activationConfigs）。
     var defaultConfigID: UUID
+    /// 菜单栏状态项图标的 SF Symbol 名。纯字符串持久化（库无关）。缺失/无效时回退到 `defaultMenuBarIconName`。
+    var menuBarIconName: String
+
+    /// 菜单栏图标默认值（也是渲染兜底：无效名一律回退到它，状态项绝不空白）。
+    static let defaultMenuBarIconName = "command"
+
+    /// 个性化页的预设 SF Symbol（用户也可在自定义框输入任意符号名）。
+    static let menuBarIconPresets: [String] = [
+        "command", "bolt", "bolt.fill", "righttriangle.split.diagonal",
+    ]
 
     init(
         showDockIcon: Bool = false,
         launchAtLogin: Bool = false,
-        defaultConfigID: UUID = UUID()
+        defaultConfigID: UUID = UUID(),
+        menuBarIconName: String = AppSettings.defaultMenuBarIconName
     ) {
         self.showDockIcon = showDockIcon
         self.launchAtLogin = launchAtLogin
         self.defaultConfigID = defaultConfigID
+        self.menuBarIconName = menuBarIconName
+    }
+
+    // 自定义解码：旧 config.json 没有 menuBarIconName 键。合成的 Decodable 会因缺键整体抛错，
+    // 进而 PersistenceStore.load() 返回 nil → makeDefault() 清空用户数据。故新键用 decodeIfPresent 容错。
+    // （encode(to:) 仍由编译器合成，按全部存储属性写出。）
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        showDockIcon = try c.decodeIfPresent(Bool.self, forKey: .showDockIcon) ?? false
+        launchAtLogin = try c.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
+        defaultConfigID = try c.decode(UUID.self, forKey: .defaultConfigID)
+        menuBarIconName = try c.decodeIfPresent(String.self, forKey: .menuBarIconName)
+            ?? AppSettings.defaultMenuBarIconName
     }
 }

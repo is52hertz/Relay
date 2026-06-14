@@ -578,3 +578,37 @@ Authored a 3-language README group (English authoritative + zh-Hans + zh-Hant), 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: Personalization: customizable menu bar icon (SF Symbol presets + custom)
+
+**Date**: 2026-06-15
+**Task**: Personalization: customizable menu bar icon (SF Symbol presets + custom)
+**Branch**: `feat/personalization-menu-bar-icon`
+
+### Summary
+
+Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbols (swatch row, Style B) + a custom SF Symbol field with live NSImage validation (invalid never written; label falls back to default so the status item never goes blank). Persisted menuBarIconName in AppSettings with a backward-compat custom init(from:) (decodeIfPresent) to avoid wiping user data on legacy config.json; schemaVersion 2→3; added a legacy-decode unit test. MenuBarExtra label reads the setting live. Localized into zh-Hans/zh-Hant. Followed two-step confirmation; built 3 candidate control styles for live testing, user picked Style B; then tidied the custom row (borderless + placeholder).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3ebaab7` | (see git log) |
+| `d26e36b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -206,6 +206,23 @@
         }
       }
     },
+    "Apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "套用"
+          }
+        }
+      }
+    },
     "Background": {
       "extractionState": "manual",
       "localizations": {
@@ -287,6 +304,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "建立新設定檔"
+          }
+        }
+      }
+    },
+    "Current": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前"
+          }
+        }
+      }
+    },
+    "Current menu bar icon": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前菜单栏图标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前選單列圖示"
+          }
+        }
+      }
+    },
+    "Custom SF Symbol": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自定义 SF Symbol"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自訂 SF Symbol"
           }
         }
       }
@@ -648,6 +716,23 @@
         }
       }
     },
+    "Menu Bar Icon": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单栏图标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選單列圖示"
+          }
+        }
+      }
+    },
     "Minimize": {
       "extractionState": "manual",
       "localizations": {
@@ -818,6 +903,23 @@
         }
       }
     },
+    "Not a valid SF Symbol name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不是有效的 SF Symbol 名称。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不是有效的 SF Symbol 名稱。"
+          }
+        }
+      }
+    },
     "Not installed": {
       "extractionState": "manual",
       "localizations": {
@@ -882,6 +984,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "個人化"
+          }
+        }
+      }
+    },
+    "Pick a preset, or enter any SF Symbol below. Changes apply immediately.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择一个预设，或在下方输入任意 SF Symbol。更改立即生效。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選擇一個預設，或在下方輸入任意 SF Symbol。變更立即生效。"
           }
         }
       }
@@ -1091,6 +1210,23 @@
         }
       }
     },
+    "SF Symbol name": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Symbol 名称"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Symbol 名稱"
+          }
+        }
+      }
+    },
     "Select a profile, or create one.": {
       "extractionState": "manual",
       "localizations": {
@@ -1223,6 +1359,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "切換隱藏"
+          }
+        }
+      }
+    },
+    "Type any SF Symbol name (for example star.fill). Invalid names are ignored, so the icon never goes blank.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可输入任意 SF Symbol 名称（例如 star.fill）。无效名称会被忽略，图标不会变空白。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可輸入任意 SF Symbol 名稱（例如 star.fill）。無效名稱會被忽略，圖示不會變空白。"
           }
         }
       }
