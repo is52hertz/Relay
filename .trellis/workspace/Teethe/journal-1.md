@@ -373,3 +373,69 @@ Split the single TabView Window into a Profiles main Window plus a real Settings
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: Pin Profiles sidebar (always visible, no collapse toggle)
+
+**Date**: 2026-06-10
+**Task**: Pin Profiles sidebar (always visible, no collapse toggle)
+**Branch**: `feat/profiles-sidebar-always-visible`
+
+### Summary
+
+Fixed the unnatural sidebar hide/show transition in the Profiles main window by pinning the sidebar: NavigationSplitView now uses columnVisibility .constant(.doubleColumn) and removes the system sidebar-toggle, mirroring the verified SettingsRootView pattern. This eliminates the SwiftUI collapse reflow where the leading toolbar buttons jump beside the traffic lights into a glass capsule. Add Profile and detail toolbars unchanged; single-file change in ProfilesView.swift plus a swiftui.md spec sync. Build + RelayTests (11) green; trellis-check clean.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ce9ffad` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 10: Profile sidebar keyboard shortcuts + active-bolt styling
+
+**Date**: 2026-06-12
+**Task**: Profile sidebar keyboard shortcuts + active-bolt styling
+**Branch**: `fix/profile-uiux`
+
+### Summary
+
+Added keyboard-shortcut glyph hints to Profiles sidebar context menu (⌘↩ Set as Active, ↩ Rename, ⌫ Delete) aligned with real handlers; bindings detail list gains row selection + .onDeleteCommand to remove the selected binding via Delete/⌫, with BindingRow Remove showing ⌫; active-profile bolt switched to .body sizing. Verified via xcodebuild (BUILD SUCCEEDED).
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `27da131` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

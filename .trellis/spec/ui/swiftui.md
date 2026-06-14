@@ -7,6 +7,9 @@
   trigger (see below).
 - The **management UI (Profiles)** is a **`Window` (id `"main"`)** — `ProfilesView`
   (NavigationSplitView with the "Add Profile" toolbar), injecting `AppModel` + `TargetAppResolver`.
+  Like `SettingsRootView`, its sidebar is **pinned** (`columnVisibility: .constant(.doubleColumn)`,
+  `.toolbar(removing: .sidebarToggle)`) — no collapse button, which avoids the SwiftUI collapse
+  reflow where the leading toolbar buttons jump beside the traffic lights into a glass capsule.
   It must stay in a `Window`, **not** the `Settings` scene: Settings windows drop custom
   `.toolbar` buttons (Add App / Add Profile / Set Active go dead) and misbehave when the
   activation policy changes.
@@ -48,7 +51,11 @@
 ## Native HIG containers
 
 - `NavigationSplitView` (sidebar list + detail). Sidebar uses `.contextMenu` (Set Active /
-  Rename / Delete) and `.alert` with a `TextField` for rename.
+  Rename / Delete). Rename is **inline** (a focused `TextField` in the row, not an alert).
+  Keyboard on the selected row: `.onDeleteCommand` deletes; `.onKeyPress(.return)` starts
+  inline rename; a hidden `.keyboardShortcut(.return, modifiers: .command)` button sets active;
+  a quick **second Return within ~300ms** of starting rename cancels it and sets active instead
+  (timing disambiguation via a `renameStartedAt` stamp). Esc / focus loss cancels rename.
 - `Form` with `.formStyle(.grouped)` for settings; `List` + `.toolbar` for the binding editor
   (toolbars work in a `Window`).
 - Empty / unavailable states use `ContentUnavailableView` ("No Apps", "No Profile Selected").

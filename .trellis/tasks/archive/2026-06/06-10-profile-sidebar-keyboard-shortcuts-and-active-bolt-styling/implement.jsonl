@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "SwiftUI/UI 约定：ProfilesView/ProfileRow 结构、List 选中、语义色与无障碍、Liquid Glass 容器，键盘操作与行内改名/闪电样式需遵循"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "代码质量/风格约定（命名、可测试性、MainActor 边界），新增键盘处理与计时逻辑需符合"}

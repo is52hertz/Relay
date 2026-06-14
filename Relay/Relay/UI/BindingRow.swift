@@ -57,9 +57,12 @@ struct BindingRow: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(binding.app.displayName)
         .contextMenu {
+            // .keyboardShortcut 仅作菜单项右侧 ⌫ 字形提示；真实删除由 List 的 .onDeleteCommand 处理。
+            // 纯 ⌫：.keyboardShortcut 默认带 .command，需显式 modifiers: [] 才显示 ⌫。
             Button("Remove", role: .destructive) {
                 model.removeBindings([binding.id], from: profileID)
             }
+            .keyboardShortcut(.delete, modifiers: [])
         }
     }
 

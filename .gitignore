@@ -27,3 +27,6 @@ DerivedData/
 
 # Playwright MCP scratch (snapshots / console logs from local debugging)
 .playwright-mcp/
+
+# Relay reset-state backups (local Library snapshots moved by Test/reset-relay-state.sh)
+Test/backups/

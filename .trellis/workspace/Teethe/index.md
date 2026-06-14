@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
-- **Last Active**: 2026-06-10
+- **Total Sessions**: 10
+- **Last Active**: 2026-06-12
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~375 | Active |
+| `journal-1.md` | ~441 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 10 | 2026-06-12 | Profile sidebar keyboard shortcuts + active-bolt styling | `27da131` | `fix/profile-uiux` |
+| 9 | 2026-06-10 | Pin Profiles sidebar (always visible, no collapse toggle) | `ce9ffad` | `feat/profiles-sidebar-always-visible` |
 | 8 | 2026-06-10 | Split Profiles main window and General Settings scene | `8af24f4`, `dcaa557`, `694c154`, `007df01` | `feat/profiles-window-settings-split` |
 | 7 | 2026-06-09 | Background-editable + minimize via Accessibility | `d0fed3a`, `1a8516b` | `feat/background-minimize-accessibility` |
 | 6 | 2026-06-09 | Per-state ActivationConfig (redesign FocusBehavior) | `44f9736` | `feat/per-state-activation-config` |

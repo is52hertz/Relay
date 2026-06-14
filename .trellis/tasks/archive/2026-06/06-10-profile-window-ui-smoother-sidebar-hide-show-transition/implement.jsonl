@@ -1,0 +1,1 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "SwiftUI/UI 约定：NavigationSplitView 与 Settings 侧栏（columnVisibility 固定 .doubleColumn + 移除 sidebarToggle）的既定做法，本任务直接对齐"}
