@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核对 README 功能/权限/构建描述与系统集成事实一致、无夸大"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "核对 README 架构/隐私描述与实际一致"}

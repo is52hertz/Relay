@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "README 功能/权限段需准确：全局热键不需 Accessibility、最小化按需授权、relaunch、sandbox 关闭原因等都在此核对"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "README 架构/数据段需准确：AppModel SoT、Codable JSON 持久化、组合根注入、无遥测本地优先"}
