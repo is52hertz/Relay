@@ -49,6 +49,14 @@ final class LanguageService {
     /// 系统 per-app 语言覆盖键（写入 App 自身偏好域即覆盖本 App 启动语言）。
     private let appleLanguagesKey = "AppleLanguages"
 
+    /// 重启前同步 flush 配置落盘的钩子（组合根注入 model.saveNow，同 hotkeysDidChange 的惯例）。
+    /// 不直接持有 AppModel——只经闭包，保持本服务不依赖其具体类型。
+    @ObservationIgnored private let flushBeforeRelaunch: @MainActor () -> Void
+
+    init(flushBeforeRelaunch: @escaping @MainActor () -> Void = {}) {
+        self.flushBeforeRelaunch = flushBeforeRelaunch
+    }
+
     /// 当前选择：读我方偏好键；无值或不识别 → `.system`。
     var current: AppLanguage {
         guard let raw = UserDefaults.standard.string(forKey: preferenceKey),
@@ -71,8 +79,10 @@ final class LanguageService {
     }
 
     /// 拉起一个全新实例再终止当前实例：新实例启动时读到更新后的 AppleLanguages。
-    /// `willTerminate`（AppController 接线）会同步 flush 保存，无数据丢失。
+    /// 必须在 `open -n` 之前同步 flush 配置：否则新实例可能在旧实例 `willTerminate` flush 前
+    /// 就读盘拿到旧 JSON（编辑仍在 400ms 去抖窗口内），新实例后续一保存即覆盖刚 flush 的编辑 → 丢数据。
     private func relaunch() {
+        flushBeforeRelaunch()
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
         task.arguments = ["-n", Bundle.main.bundlePath]

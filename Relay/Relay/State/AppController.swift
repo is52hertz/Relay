@@ -43,7 +43,7 @@ final class AppController {
         self.resolver = resolver
         self.frontmost = frontmost
         self.minimizer = minimizer
-        self.languageService = LanguageService()
+        self.languageService = LanguageService(flushBeforeRelaunch: { [model] in model.saveNow() })
         self.activation = activation
         self.registration = registration
         self.loginItem = loginItem

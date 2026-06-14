@@ -38,8 +38,8 @@ struct PersonalizationSettingsView: View {
             presenting: pending
         ) { target in
             Button("Restart Now") { language.apply(target) }
-            // 取消：回退选择器到当前生效语言。
-            Button("Cancel", role: .cancel) { selection = language.current }
+            // 取消：选择器回退由 dialogPresented setter 统一处理（覆盖 Esc / 点外部 / Cancel）。
+            Button("Cancel", role: .cancel) { }
         } message: { _ in
             Text("Relay needs to restart to switch languages. Your settings are saved.")
         }
@@ -56,7 +56,16 @@ struct PersonalizationSettingsView: View {
         )
     }
 
+    /// 关闭分支（Esc / 点外部 / Cancel 都经此）统一回退：清 pending 并把选择器回显到当前生效语言。
     private var dialogPresented: Binding<Bool> {
-        Binding(get: { pending != nil }, set: { if !$0 { pending = nil } })
+        Binding(
+            get: { pending != nil },
+            set: { presented in
+                if !presented {
+                    pending = nil
+                    selection = language.current
+                }
+            }
+        )
     }
 }
