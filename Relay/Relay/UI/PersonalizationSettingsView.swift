@@ -27,6 +27,7 @@ struct PersonalizationSettingsView: View {
     var body: some View {
         Form {
             menuBarIconSection
+            menuBarVisibilitySection
             languageSection
         }
         .formStyle(.grouped)
@@ -120,6 +121,52 @@ struct PersonalizationSettingsView: View {
         .buttonStyle(.plain)
         .accessibilityLabel(name)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    // MARK: - 菜单栏图标可见性 + 全局切换热键（F-A / F-B）
+
+    @ViewBuilder
+    private var menuBarVisibilitySection: some View {
+        Section {
+            // 显示/隐藏开关。锁定守卫（R5）：未设切换热键时禁用「隐藏」，避免把自己锁在菜单栏外。
+            Toggle("Show menu bar icon", isOn: showIconBinding)
+                .disabled(!canHideIcon && model.settings.showMenuBarIcon)
+
+            LabeledContent("Toggle hotkey") {
+                ShortcutRecorder(hotkey: toggleHotkeyBinding)
+                    .fixedSize()
+            }
+        } header: {
+            Text("Menu Bar Icon Visibility")
+        } footer: {
+            // 未设热键时解释为何不能隐藏（锁定守卫引导）。
+            if !canHideIcon {
+                Text("Set a toggle hotkey before you can hide the icon. The hotkey always brings it back, even when the icon is hidden, so you’re never locked out.")
+            } else {
+                Text("Press the toggle hotkey to show or hide the menu bar icon at any time. It works in any profile and isn’t cleared when you switch profiles.")
+            }
+        }
+    }
+
+    /// 是否已配置切换热键（决定能否隐藏图标）。
+    private var canHideIcon: Bool {
+        model.settings.menuBarToggleHotkey != nil
+    }
+
+    /// 显示/隐藏开关绑定：写经 AppModel.setMenuBarIconVisible（含锁定守卫）。
+    private var showIconBinding: Binding<Bool> {
+        Binding(
+            get: { model.settings.showMenuBarIcon },
+            set: { model.setMenuBarIconVisible($0) }
+        )
+    }
+
+    /// 切换热键绑定：写经 AppModel.setMenuBarToggleHotkey（清除热键且图标隐藏时会自动唤回图标）。
+    private var toggleHotkeyBinding: Binding<Hotkey?> {
+        Binding(
+            get: { model.settings.menuBarToggleHotkey },
+            set: { model.setMenuBarToggleHotkey($0) }
+        )
     }
 
     // MARK: - 语言

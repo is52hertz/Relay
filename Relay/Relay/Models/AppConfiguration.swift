@@ -15,7 +15,8 @@ nonisolated struct AppConfiguration: Codable, Hashable, Sendable {
     var activationConfigs: [ActivationConfig]
     var settings: AppSettings
 
-    static let currentSchemaVersion = 3
+    // schema 4：AppSettings 新增 showMenuBarIcon / menuBarToggleHotkey（菜单栏图标可见性 + 全局切换热键）。
+    static let currentSchemaVersion = 4
 
     init(
         schemaVersion: Int = AppConfiguration.currentSchemaVersion,
@@ -54,6 +55,11 @@ nonisolated struct AppSettings: Codable, Hashable, Sendable {
     var defaultConfigID: UUID
     /// 菜单栏状态项图标的 SF Symbol 名。纯字符串持久化（库无关）。缺失/无效时回退到 `defaultMenuBarIconName`。
     var menuBarIconName: String
+    /// 是否显示菜单栏状态项（默认 true）。隐藏前必须先设好 menuBarToggleHotkey，避免把自己锁在外面（见锁定守卫）。
+    var showMenuBarIcon: Bool
+    /// 切换菜单栏图标可见性的「全局应用命令」热键；nil = 未设置/禁用。
+    /// 存 Carbon 码（库无关，复用 Hotkey），区别于「仅注册当前 Profile 绑定」——这是常驻的应用控制命令。
+    var menuBarToggleHotkey: Hotkey?
 
     /// 菜单栏图标默认值（也是渲染兜底：无效名一律回退到它，状态项绝不空白）。
     static let defaultMenuBarIconName = "command"
@@ -67,12 +73,16 @@ nonisolated struct AppSettings: Codable, Hashable, Sendable {
         showDockIcon: Bool = false,
         launchAtLogin: Bool = false,
         defaultConfigID: UUID = UUID(),
-        menuBarIconName: String = AppSettings.defaultMenuBarIconName
+        menuBarIconName: String = AppSettings.defaultMenuBarIconName,
+        showMenuBarIcon: Bool = true,
+        menuBarToggleHotkey: Hotkey? = nil
     ) {
         self.showDockIcon = showDockIcon
         self.launchAtLogin = launchAtLogin
         self.defaultConfigID = defaultConfigID
         self.menuBarIconName = menuBarIconName
+        self.showMenuBarIcon = showMenuBarIcon
+        self.menuBarToggleHotkey = menuBarToggleHotkey
     }
 
     // 自定义解码：旧 config.json 没有 menuBarIconName 键。合成的 Decodable 会因缺键整体抛错，
@@ -85,5 +95,8 @@ nonisolated struct AppSettings: Codable, Hashable, Sendable {
         defaultConfigID = try c.decode(UUID.self, forKey: .defaultConfigID)
         menuBarIconName = try c.decodeIfPresent(String.self, forKey: .menuBarIconName)
             ?? AppSettings.defaultMenuBarIconName
+        // schema ≤3 的旧 config.json 没有这两个键：缺失时回退到「图标可见、无切换热键」，老用户不丢图标。
+        showMenuBarIcon = try c.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? true
+        menuBarToggleHotkey = try c.decodeIfPresent(Hotkey.self, forKey: .menuBarToggleHotkey) ?? nil
     }
 }

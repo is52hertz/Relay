@@ -12,7 +12,9 @@ struct RelayApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra {
+        // 绑定 isInserted 到 showMenuBarIcon：隐藏即时移除状态项（@Observable 驱动）。
+        // 写入经 AppModel.setMenuBarIconVisible（含锁定守卫，落盘 + settingsDidChange）。
+        MenuBarExtra(isInserted: menuBarIconVisibleBinding) {
             MenuBarContent()
                 .environment(controller.model)
         } label: {
@@ -54,6 +56,14 @@ struct RelayApp: App {
             // 没有了 Settings 场景，自己提供标准的 "Settings…" 菜单项 + ⌘,。
             CommandGroup(replacing: .appSettings) { OpenSettingsButton() }
         }
+    }
+
+    /// MenuBarExtra(isInserted:) 的双向绑定：读 showMenuBarIcon，写经 AppModel（锁定守卫在此兜底）。
+    private var menuBarIconVisibleBinding: Binding<Bool> {
+        Binding(
+            get: { controller.model.settings.showMenuBarIcon },
+            set: { controller.model.setMenuBarIconVisible($0) }
+        )
     }
 }
 
