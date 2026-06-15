@@ -15,8 +15,11 @@ struct DataSettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(BackupService.self) private var backup
 
-    /// 快照列表（每次出现/操作后刷新；避免每帧扫盘）。
-    @State private var snapshots: [SnapshotInfo] = []
+    /// 待确认删除的快照（驱动 confirmationDialog）。
+    @State private var snapshotPendingDelete: SnapshotInfo?
+
+    /// 当前鼠标悬停的快照行 id；用于「仅悬停时显露 Delete 按钮」的列表常见模式。
+    @State private var hoveredSnapshotID: SnapshotInfo.ID?
 
     var body: some View {
         Form {
@@ -25,7 +28,21 @@ struct DataSettingsView: View {
             snapshotsSection
         }
         .formStyle(.grouped)
-        .onAppear(perform: reloadSnapshots)
+        // 监听器只在本面板可见时运行：进入即 startWatching（内含一次刷新 + 武装 vnode 源），
+        // 离开即 stopWatching（取消源、关闭 fd），避免 Settings 窗口未开时整生命周期空转监听。
+        .onAppear { backup.startWatching() }
+        .onDisappear { backup.stopWatching() }
+        .confirmationDialog(
+            "Delete this snapshot?",
+            isPresented: deleteDialogPresented,
+            titleVisibility: .visible,
+            presenting: snapshotPendingDelete
+        ) { info in
+            Button("Delete", role: .destructive) { deleteSnapshot(info) }
+            Button("Cancel", role: .cancel) {}
+        } message: { _ in
+            Text("This permanently removes this safety-net snapshot. This can’t be undone.")
+        }
     }
 
     // MARK: - Backup（导出）
@@ -63,12 +80,13 @@ struct DataSettingsView: View {
 
     private var snapshotsSection: some View {
         Section {
-            if snapshots.isEmpty {
+            // 直接读 backup.snapshots（可观察）——目录监听器/in-app 操作改动它时 SwiftUI 自动重渲染。
+            if backup.snapshots.isEmpty {
                 Text("No snapshots yet. Relay creates one automatically before any reset or import.")
                     .foregroundStyle(.secondary)
                     .font(.callout)
             } else {
-                ForEach(snapshots) { info in
+                ForEach(backup.snapshots) { info in
                     snapshotRow(info)
                 }
             }
@@ -80,7 +98,8 @@ struct DataSettingsView: View {
     }
 
     private func snapshotRow(_ info: SnapshotInfo) -> some View {
-        HStack {
+        let isHovered = hoveredSnapshotID == info.id
+        return HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(info.createdAt, format: .dateTime.year().month().day().hour().minute())
                 Text(byteCount(info.sizeBytes))
@@ -89,7 +108,21 @@ struct DataSettingsView: View {
             }
             Spacer()
             Button("Restore") { restoreSnapshot(info) }
-            Button("Reveal in Finder") { revealInFinder(info.url) }
+            Button("Reveal in Finder") { revealInFinder(info) }
+            // 与同排「Restore / Reveal in Finder」统一为文本按钮；role: .destructive 让系统给红色、
+            // 保留「危险」语义（复用既有 Delete 本地化键，不新增字符串）。
+            // 「仅悬停显露」常见列表模式：用 .opacity 而非条件 if，让按钮始终占位——隐藏/显示不重排该行，
+            // Restore/Reveal 不会跳动；隐藏时再 .allowsHitTesting(false) 去掉不可见的可点击目标。
+            Button("Delete", role: .destructive) {
+                snapshotPendingDelete = info
+            }
+            .opacity(isHovered ? 1 : 0)
+            .allowsHitTesting(isHovered)
+        }
+        // 逐行各自跟踪悬停：进入设为本行 id；离开仅在「当前记录的就是本行」时清空，
+        // 避免快速划过相邻行时 B 行的「离开」误清掉 A 行刚设的悬停态。
+        .onHover { hovering in
+            hoveredSnapshotID = hovering ? info.id : (hoveredSnapshotID == info.id ? nil : hoveredSnapshotID)
         }
     }
 
@@ -157,11 +190,17 @@ struct DataSettingsView: View {
     // MARK: - 动作：从快照恢复
 
     private func restoreSnapshot(_ info: SnapshotInfo) {
+        // 防御：外部删除竞态——文件可能在列表渲染后、点击前已被删。明确报错并刷新列表，绝不崩溃。
+        guard FileManager.default.fileExists(atPath: info.url.path) else {
+            presentMissingSnapshot(title: String(localized: "Couldn’t restore snapshot"))
+            return
+        }
         let restored: AppConfiguration
         do {
             restored = try backup.readBackup(from: info.url)
         } catch {
             presentError(error, title: String(localized: "Couldn’t restore snapshot"))
+            backup.refreshSnapshots()
             return
         }
         confirmDestructive(
@@ -170,6 +209,18 @@ struct DataSettingsView: View {
             confirmTitle: String(localized: "Restore")
         ) {
             applyReplacement(restored)
+        }
+    }
+
+    // MARK: - 动作：删除单份快照
+
+    private func deleteSnapshot(_ info: SnapshotInfo) {
+        do {
+            // deleteSnapshot 对「文件已不存在」按成功处理；这里只需把别的 IO 错误报出来。
+            try backup.deleteSnapshot(info)
+        } catch {
+            presentError(error, title: String(localized: "Couldn’t delete snapshot"))
+            backup.refreshSnapshots()
         }
     }
 
@@ -186,17 +237,19 @@ struct DataSettingsView: View {
             guard proceed else { return }
         }
         model.replaceConfiguration(new)
-        reloadSnapshots()
+        backup.refreshSnapshots()
     }
 
-    // MARK: - 列表刷新 / Finder
+    // MARK: - Finder
 
-    private func reloadSnapshots() {
-        snapshots = backup.listSnapshots()
-    }
-
-    private func revealInFinder(_ url: URL) {
-        NSWorkspace.shared.activateFileViewerSelecting([url])
+    private func revealInFinder(_ info: SnapshotInfo) {
+        // 防御：外部删除竞态——文件已不在时 activateFileViewerSelecting 会无声打开父目录，
+        // 体验上像「什么都没发生」。改为明确报错并刷新列表。
+        guard FileManager.default.fileExists(atPath: info.url.path) else {
+            presentMissingSnapshot(title: String(localized: "Couldn’t reveal snapshot"))
+            return
+        }
+        NSWorkspace.shared.activateFileViewerSelecting([info.url])
     }
 
     // MARK: - 文件名 / UTType helpers
@@ -263,5 +316,27 @@ struct DataSettingsView: View {
             ?? error.localizedDescription
         alert.addButton(withTitle: String(localized: "OK"))
         alert.runModal()
+    }
+
+    /// 快照文件已不存在（外部删除竞态）时的统一提示：明确告知 + 刷新列表去掉幽灵行。
+    private func presentMissingSnapshot(title: String) {
+        NSApplication.shared.activate()
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = title
+        alert.informativeText = String(localized: "This snapshot no longer exists. It may have been deleted outside Relay.")
+        alert.addButton(withTitle: String(localized: "OK"))
+        alert.runModal()
+        backup.refreshSnapshots()
+    }
+
+    // MARK: - confirmationDialog 绑定
+
+    /// 把 `snapshotPendingDelete` 是否有值映射为 Bool 绑定，驱动删除确认对话框。
+    private var deleteDialogPresented: Binding<Bool> {
+        Binding(
+            get: { snapshotPendingDelete != nil },
+            set: { if !$0 { snapshotPendingDelete = nil } }
+        )
     }
 }

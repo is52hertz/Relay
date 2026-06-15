@@ -2008,6 +2008,91 @@
           }
         }
       }
+    },
+    "Delete this snapshot?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除此快照？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除此快照？"
+          }
+        }
+      }
+    },
+    "This permanently removes this safety-net snapshot. This can’t be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会永久删除这份安全兜底快照，且无法撤销。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會永久刪除這份安全兜底快照，且無法復原。"
+          }
+        }
+      }
+    },
+    "This snapshot no longer exists. It may have been deleted outside Relay.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此快照已不存在，可能已在 Relay 之外被删除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此快照已不存在，可能已在 Relay 之外被刪除。"
+          }
+        }
+      }
+    },
+    "Couldn’t delete snapshot": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法删除快照"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法刪除快照"
+          }
+        }
+      }
+    },
+    "Couldn’t reveal snapshot": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法在 Finder 中显示快照"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法在 Finder 中顯示快照"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
