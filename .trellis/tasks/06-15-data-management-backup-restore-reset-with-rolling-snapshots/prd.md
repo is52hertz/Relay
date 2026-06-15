@@ -37,10 +37,14 @@ validated, app-managed mechanism.
 ## Confirmed decisions (from brainstorm)
 
 - **Backup scope = `AppConfiguration` only.** Includes profiles/bindings/
-  activation configs/settings (and `menuBarIconName`). **Excludes** OS-side
-  state: UI language (`AppleLanguages` / `RelayPreferredLanguage`) and
-  login-at-login (`SMAppService`) — they are machine/environment state, not
-  portable. [user A1]
+  activation configs/`settings`. NOTE: `AppSettings` preferences —
+  `showDockIcon`, `launchAtLogin`, `menuBarIconName`, `defaultConfigID` — ARE
+  part of `AppConfiguration` and travel with the backup; on restore they are
+  re-applied via `settingsDidChange` (e.g. `SMAppService` for login). The only
+  thing excluded is state stored **outside** `AppConfiguration`: the UI language
+  (`AppleLanguages` / `RelayPreferredLanguage` in `UserDefaults`). [user A1,
+  refined after manual test 1.4 — `launchAtLogin` is a config field, not
+  external OS state, so it stays in; consistent with `showDockIcon`.]
 - **Automatic rolling snapshots = yes**, as the undo safety net before every
   destructive op (reset / restore / import). [user A2]
 - **Snapshot directory = `~/Library/Application Support/cn.Teethe.Relay/Backups/`**
@@ -125,7 +129,9 @@ validated, app-managed mechanism.
 
 - iCloud / cloud / network sync (conflicts with the local-only security
   boundary; the app is local/self-use).
-- Backing up OS-side state (UI language, login item).
+- Backing up state stored outside `AppConfiguration` (the UI language in
+  `UserDefaults`/`AppleLanguages`). Note: `launchAtLogin` / `showDockIcon` are
+  `AppSettings` fields *inside* `AppConfiguration` and ARE backed up.
 - Encryption / password-protected backups.
 - Scheduled/timed periodic snapshots (snapshots are only before destructive
   ops). Could be a future addition.

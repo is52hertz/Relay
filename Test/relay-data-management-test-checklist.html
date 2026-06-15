@@ -141,7 +141,7 @@ const DATA = [
     { id:"1.1", t:"点 Export… → 弹 NSSavePanel，默认文件名形如 Relay-Backup-<时间戳>.relaybackup。", e:"默认名带可排序时间戳；可改名/选目录。" },
     { id:"1.2", t:"保存后，用文本编辑器打开该文件 → 是 JSON，含信封字段 formatVersion / appVersion / exportedAt / schemaVersion / configuration。", e:"不是裸 config.json，而是带元数据的信封。" },
     { id:"1.3", t:"信封内 configuration 含全部 Profile/绑定/行为预设/settings，且 menuBarIconName = 你设的图标名。" },
-    { id:"1.4", t:"信封内不含 OS 侧状态（无 AppleLanguages / 无登录项字段）。", e:"备份范围仅 AppConfiguration（决策 A1）。" },
+    { id:"1.4", t:"信封内不含 config 之外的 UI 语言（无 AppleLanguages / RelayPreferredLanguage）。注意：showDockIcon / launchAtLogin / menuBarIconName 是 AppSettings 字段、属 AppConfiguration，随备份一起导出属预期。", e:"排除的只有存在 UserDefaults 的语言；登录/Dock/图标偏好是 config 字段，包含才正确（导入时经 settingsDidChange 重应用）。" },
   ]},
 
   { id:"s2", title:"2 · 导入（Restore）", pri:true, note:"导入是破坏性操作 —— 应有二次确认，且导入前自动先存一份快照。", items:[

@@ -73,7 +73,10 @@ fans out to the service.
 - `BackupService` is **Foundation-only and injected from `AppController`** (AppKit-free → unit
   testable). The `NSSavePanel` / `NSOpenPanel` / `NSAlert` live in the UI layer
   (`DataSettingsView`), which hands chosen URLs to the service. Backup scope is the Codable
-  `AppConfiguration` only — OS-side state (UI language, login item) is deliberately excluded.
+  `AppConfiguration` only — including `AppSettings` preferences (`launchAtLogin`, `showDockIcon`,
+  `menuBarIconName`), which are re-applied via `settingsDidChange` on restore. The only excluded
+  state is what lives **outside** `AppConfiguration`: the UI language
+  (`AppleLanguages` / `RelayPreferredLanguage` in `UserDefaults`).
 
 ## Adding a feature — the path
 
