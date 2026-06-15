@@ -1,7 +1,10 @@
 # macOS System Integration
 
-All cross-app control uses **public AppKit APIs only — no Accessibility, no Input Monitoring,
-no private APIs.** That constraint is a product rule (AGENTS.md); honor it.
+Cross-app control uses **public AppKit APIs by default — no Input Monitoring, no private APIs.**
+That constraint is a product rule (AGENTS.md); honor it. The one allowed exception is
+**Accessibility, requested lazily and degrading safely** — it powers the window-management
+actions and is confined to a single service (see *Window management via Accessibility* below).
+Global hotkeys never need it.
 
 ## Global hotkeys (`HotkeyRegistrationService` + `KeyboardShortcuts`)
 
@@ -40,6 +43,31 @@ no private APIs.** That constraint is a product rule (AGENTS.md); honor it.
 `(current, previous)` pair, **excluding Relay itself**. Equivalent to ⌘-Tab's depth-2 MRU; pure
 event-driven, zero idle cost. When the target is frontmost, activate `previous` (via
 `openApplication`); if none, fall back to hiding the target.
+
+## Window management via Accessibility (`WindowMinimizer`)
+
+`WindowMinimizer` is the **sole Accessibility entry point** — the only place that touches
+`AXUIElement`. Two FrontmostActions are AX-driven:
+
+- **`minimize`** — minimize the focused/main window (`kAXMinimizedAttribute`).
+- **`cycleWindowsThenHide`** — when the target is already frontmost, each press raises the next
+  window; after the last window has been shown, the next press hides. Uses public AX only:
+  `kAXWindowsAttribute` (enumerate), `kAXFocusedWindowAttribute` (cursor start), unminimize +
+  `kAXRaiseAction` (raise). **No private window-id APIs** (`_AXUIElementGetWindow`) — window
+  identity across presses is `CFEqual` reference equality.
+
+Rules that both must follow:
+
+- **Lazy permission, never at launch.** Request `AXIsProcessTrustedWithOptions` only when the user
+  picks one of these actions in the editor (wired from `AppController`); read-only `isTrusted`
+  checks elsewhere never prompt.
+- **Safe degradation.** Without permission, do **not** silently no-op or do the wrong thing —
+  fall back to plain `hide` and fire the shared one-time `onPermissionDenied` notice.
+- **Cycle state is in-memory only** (`[bundleID: CycleState]` on `AppActivationService`), never in
+  `AppModel`, never persisted. Order is a **snapshot taken at cycle start**, not re-derived from
+  live z-order each press (raising mutates z-order → two windows would ping-pong). State resets
+  when the app loses frontmost, via `FrontmostTracker.onAppResignedFrontmost` (the tracker only
+  broadcasts the bundle ID; it holds no cycle state).
 
 ## Shortcut recording (`ShortcutRecorder`)
 
