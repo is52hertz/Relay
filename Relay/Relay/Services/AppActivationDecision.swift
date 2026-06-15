@@ -23,6 +23,8 @@ nonisolated enum AppActivationDecision {
     /// `returnToPrevious` 在无 previous 时由执行层退化为 hide。
     /// `minimize` 需 Accessibility（AX 不可信时由执行层「无操作 + 一次性提示」降级，见 PRD D4）；
     /// 决策层保持纯（不查信任态），仅产出动作。
+    /// `cycleWindowsOrHide` 同样需 Accessibility：执行层维护每 App 的窗口轮换游标，逐次抬升下一个窗口，
+    /// 全部展示过后再 hide；AX 不可信时退化为 hide + 一次性提示（与 minimize 同套提示，PRD D4/R5）。
     enum Action: Equatable, Sendable {
         case none
         case markInvalid
@@ -34,6 +36,7 @@ nonisolated enum AppActivationDecision {
         case returnToPrevious
         case minimize
         case showWithoutFocus
+        case cycleWindowsOrHide
     }
 
     static func action(for state: RuntimeState, config: ActivationConfig) -> Action {
@@ -54,11 +57,12 @@ nonisolated enum AppActivationDecision {
             }
         case .frontmost:
             switch config.frontmost {
-            case .returnToPrevious: return .returnToPrevious
-            case .hide:             return .hide
-            case .quit:             return .quit
-            case .none:             return .none
-            case .minimize:         return .minimize
+            case .returnToPrevious:    return .returnToPrevious
+            case .hide:                return .hide
+            case .quit:                return .quit
+            case .none:                return .none
+            case .minimize:            return .minimize
+            case .cycleWindowsThenHide: return .cycleWindowsOrHide
             }
         }
     }

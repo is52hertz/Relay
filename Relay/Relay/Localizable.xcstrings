@@ -359,6 +359,23 @@
         }
       }
     },
+    "Cycle Windows, then Hide": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轮换窗口，然后隐藏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輪換視窗，然後隱藏"
+          }
+        }
+      }
+    },
     "Default behavior": {
       "extractionState": "manual",
       "localizations": {

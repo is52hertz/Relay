@@ -93,6 +93,49 @@ final class WindowMinimizer {
         return CFBooleanGetValue((value as! CFBoolean))
     }
 
+    // MARK: - 窗口轮换（cycleWindowsThenHide 用，PRD R2/R4）
+
+    /// 枚举给定 pid 的全部窗口，按 kAXWindowsAttribute 的当前 z-order 返回（PRD Q1：不按 subrole 过滤）。
+    /// 返回的 AXUIElement 直接作为「稳定身份」——执行层用 CFEqual 跨次匹配同一窗口（见 windowsEqual）。
+    /// 失败 / 非数组 → 空数组（执行层据此退化为 hide）。仅在「已信任」时由轮换路径调用，绝不弹窗。
+    func orderedWindows(ofPID pid: pid_t) -> [AXUIElement] {
+        guard isTrusted else { return [] }
+        let appElement = AXUIElementCreateApplication(pid)
+        var value: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &value)
+        guard result == .success, let value, CFGetTypeID(value) == CFArrayGetTypeID() else {
+            return []
+        }
+        return value as! [AXUIElement]
+    }
+
+    /// 当前焦点窗口在 `windows` 中的索引（PRD Q3：首按从「焦点窗口的下一个」开始）。
+    /// 读 kAXFocusedWindowAttribute（失败回退 kAXMainWindowAttribute），用 CFEqual 在快照里定位；
+    /// 找不到（无焦点窗口 / 不在快照中）→ nil，执行层将游标当作「-1」从头开始。
+    func focusedWindowIndex(in windows: [AXUIElement], ofPID pid: pid_t) -> Int? {
+        guard isTrusted else { return nil }
+        let appElement = AXUIElementCreateApplication(pid)
+        guard let focused = focusedOrMainWindow(of: appElement) else { return nil }
+        return windows.firstIndex { windowsEqual($0, focused) }
+    }
+
+    /// 抬升给定窗口：若已最小化先取消最小化（PRD：最小化窗口轮到时先复原再抬升），再 kAXRaiseAction。
+    /// 仅作用于 AX 层；把 App 真正置前由执行层用 NSWorkspace.openApplication 完成（公开 API）。
+    /// 仅在「已信任」时由轮换路径调用，绝不弹窗。
+    func raiseWindow(_ window: AXUIElement) {
+        guard isTrusted else { return }
+        if isWindowMinimized(window) {
+            let falseValue = kCFBooleanFalse as CFTypeRef
+            AXUIElementSetAttributeValue(window, kAXMinimizedAttribute as CFString, falseValue)
+        }
+        AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+    }
+
+    /// 两个窗口 AXUIElement 是否指向同一窗口：用 CFEqual 引用相等（公开、稳定，避免私有 _AXUIElementGetWindow）。
+    func windowsEqual(_ a: AXUIElement, _ b: AXUIElement) -> Bool {
+        CFEqual(a, b)
+    }
+
     /// 读 kAXFocusedWindowAttribute，失败回退 kAXMainWindowAttribute。
     private func focusedOrMainWindow(of appElement: AXUIElement) -> AXUIElement? {
         if let window = copyWindowAttribute(kAXFocusedWindowAttribute, from: appElement) {

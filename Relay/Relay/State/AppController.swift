@@ -59,6 +59,11 @@ final class AppController {
             self?.warnAccessibilityDeniedOnce()
         }
 
+        // cycleWindowsThenHide：某 App 失去前台时清空其窗口轮换游标（切走再切回从头开始，PRD R3）。
+        frontmost.onAppResignedFrontmost = { [activation] bundleID in
+            activation.resetWindowCycle(forBundleID: bundleID)
+        }
+
         model.hotkeysDidChange = { [registration] profile in
             registration.activate(profile)
         }

@@ -17,6 +17,11 @@ final class FrontmostTracker {
     /// 上一个非自身的前台 App（供 Return to Previous）。
     var previousApp: NSRunningApplication? { previous }
 
+    /// 某个 App 失去前台时回调（携带其 bundleIdentifier）。供 cycleWindowsThenHide 在「切走」时
+    /// 清空该 App 的窗口轮换游标（PRD R3：切走再切回 → 从头开始）。由 AppController 接线、注入；
+    /// FrontmostTracker 不持有轮换状态，只广播「谁失去了前台」这一事件，保持职责单一、无单例。
+    @MainActor var onAppResignedFrontmost: ((String) -> Void)?
+
     /// 抑制激活记录：用于「显示不聚焦」的合成 A→C→A 跳变，避免把 previous 污染成被显示的目标 App。
     /// 引用计数 + 快照：支持重叠的多次跳变嵌套——抑制持续到所有跳变结束，归零时恢复「任一跳变之前」
     /// 的真实 (current, previous)，不依赖 didActivate 通知时序。（见 PR#7 Codex 两轮反馈）
@@ -51,6 +56,10 @@ final class FrontmostTracker {
         // 排除 Relay 自身：激活自己不应污染 previous。
         if let selfBundleID, app.bundleIdentifier == selfBundleID { return }
         guard app != current else { return }
+        // 通知「即将失去前台」的旧 current（用于清空其窗口轮换游标）；新激活的 App 自身不触发。
+        if let resigning = current?.bundleIdentifier, resigning != app.bundleIdentifier {
+            onAppResignedFrontmost?(resigning)
+        }
         previous = current
         current = app
     }
