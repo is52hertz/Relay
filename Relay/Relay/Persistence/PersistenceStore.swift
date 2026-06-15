@@ -22,13 +22,23 @@ final class PersistenceStore {
         self.decoder = JSONDecoder()
     }
 
-    static func defaultFileURL() -> URL {
+    /// Relay 在 Application Support 下的容器目录（config.json 与 Backups/ 共用此根，
+    /// 避免把 bundle-id 字符串散落到多处——BackupService 据此派生 Backups/）。
+    static func containerDirectory() -> URL {
         let base = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)
             .first ?? FileManager.default.temporaryDirectory
-        return base
-            .appendingPathComponent("cn.Teethe.Relay", isDirectory: true)
+        return base.appendingPathComponent("cn.Teethe.Relay", isDirectory: true)
+    }
+
+    static func defaultFileURL() -> URL {
+        containerDirectory()
             .appendingPathComponent("config.json", isDirectory: false)
+    }
+
+    /// 实例所用容器目录（= fileURL 的父目录）。注入了自定义 fileURL 时（如测试）随之改变。
+    var containerDirectory: URL {
+        fileURL.deletingLastPathComponent()
     }
 
     /// 读取；文件不存在或解析失败时返回 nil（调用方回退到默认配置）。
