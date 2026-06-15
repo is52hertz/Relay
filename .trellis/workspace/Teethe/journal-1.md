@@ -722,3 +722,38 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 19: Menu-bar icon visibility toggle + always-on global toggle hotkey
+
+**Date**: 2026-06-16
+**Task**: Menu-bar icon visibility toggle + always-on global toggle hotkey
+**Branch**: `feat/settings-about-page`
+
+### Summary
+
+新增菜单栏图标显隐开关(showMenuBarIcon)+常驻全局切换热键(menuBarToggleHotkey,Carbon 码),schemaVersion 3→4 向后兼容。引入第二类常驻 app 命令热键注册(AppCommand,切 Profile 不被 deactivateAll 清除,仅经 KeyboardShortcuts 无全局监听)。防锁死三层:逐次守卫 MenuBarIconLockout + 清热键自动恢复 + replaceConfiguration 批量导入重申不变量(review 发现并堵)。UI 在个性化 pane(隐藏开关 + ShortcutRecorder),三语本地化。手测暂时通过。补记:本应在 about 任务前 finish,实际在 about 分支补跑,记账落 PR #18,无碍。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a99a06d` | (see git log) |
+| `3247f83` | (see git log) |
+| `76c39dd` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
