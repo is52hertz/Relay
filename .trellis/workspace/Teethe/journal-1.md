@@ -687,3 +687,38 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 18: Settings About pane + Personalization Language reorder
+
+**Date**: 2026-06-16
+**Task**: Settings About pane + Personalization Language reorder
+**Branch**: `feat/settings-about-page`
+
+### Summary
+
+新增设置「关于」pane：App 图标(applicationIconImage)+Relay+bundle 版本(1.0 (1),非硬编码)+简介+GitHub 链接+协议 GPL-3.0 链接+KeyboardShortcuts(MIT)致谢+© 2026 Teethe。纯静态只读、无模型/持久化/网络改动,三语本地化(Version %@ (%@) 两占位符在 zh 译文保留),版本格式化抽成语言无关单测。另把个性化面板的「语言」分区移到第一位(inline 小改)。build+RelayTests 全绿,trellis-check 0 问题。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8bc33eb` | (see git log) |
+| `495d5ad` | (see git log) |
+| `d5d5214` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
