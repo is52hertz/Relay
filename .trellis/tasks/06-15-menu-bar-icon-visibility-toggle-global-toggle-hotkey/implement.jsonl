@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核心：热键注册规范——HotkeyRegistrationService 经 KeyboardShortcuts、「只注册 active Profile」；F-B 要新增独立于 Profile 的常驻 app 命令热键路径(切 Profile 不清除),属第二类注册;ShortcutRecorder 录制约定;以及 MenuBarExtra/菜单栏作为主界面"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "MenuBarExtra(isInserted:) 绑可见性、PersonalizationSettingsView 加 show/hide + ShortcutRecorder 行、设置 Window/pane 约定、键盘+VoiceOver,以及三语 Localizable.xcstrings"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "新增 AppSettings 字段(showMenuBarIcon/menuBarToggleHotkey)走 schemaVersion 3→4 + decodeIfPresent 兼容;经 AppModel 方法翻转可见性(所有变更走 AppModel);组合根 AppController 注入与 hook 接线;持久化库无关(Hotkey 存 Carbon 码)"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "AppSettings/Hotkey 等模型须 nonisolated 且不 import AppKit/SwiftUI;app 命令热键服务停 MainActor;默认 MainActor 隔离"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "文件组织(新 .swift 丢进对应目录即编译,勿手改 pbxproj)、命名(…Service)、中文 why 注释、Swift Testing 覆盖 schema-4 兼容解码/防锁死规则/命令枚举映射"}
