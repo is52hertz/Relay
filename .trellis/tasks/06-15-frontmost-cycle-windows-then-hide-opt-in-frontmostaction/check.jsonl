@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核对：是否守住 AppActivationService/Decision 契约、只用公开 AppKit/AX 文档化属性、无 CGEventTap/全局 NSEvent/私有 API、AX 未授权时安全降级为普通 hide"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "核对：循环状态未污染 AppModel(仅内存)、服务经组合根注入无单例、新增持久化字段向后兼容(旧 JSON 仍可解码)"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "核对：FrontmostAction 枚举仍 nonisolated 且不 import AppKit/SwiftUI、新服务的 MainActor 隔离正确无数据竞争"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "核对：文件落位与命名规范、中文 why 注释、是否补了 Swift Testing 用例覆盖循环/最小化/单窗口/无权限分支"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核对：编辑器新选项 UI 符合约定、三语文案 en/zh-Hans/zh-Hant 齐全、键盘/VoiceOver 可达"}
