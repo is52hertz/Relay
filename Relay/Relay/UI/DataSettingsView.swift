@@ -106,20 +106,28 @@ struct DataSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            // 末尾按钮簇靠右对齐（Spacer 顶到行尾）：悬停时把 Delete 追加进簇，
+            // 簇整体向左生长，Restore/Reveal 被自然推左——这是「让出空间」滑入效果的关键。
             Spacer()
-            Button("Restore") { restoreSnapshot(info) }
-            Button("Reveal in Finder") { revealInFinder(info) }
-            // 与同排「Restore / Reveal in Finder」统一为文本按钮；role: .destructive 让系统给红色、
-            // 保留「危险」语义（复用既有 Delete 本地化键，不新增字符串）。
-            // 「仅悬停显露」常见列表模式：用 .opacity 而非条件 if，让按钮始终占位——隐藏/显示不重排该行，
-            // Restore/Reveal 不会跳动；隐藏时再 .allowsHitTesting(false) 去掉不可见的可点击目标。
-            Button("Delete", role: .destructive) {
-                snapshotPendingDelete = info
+            HStack {
+                Button("Restore") { restoreSnapshot(info) }
+                Button("Reveal in Finder") { revealInFinder(info) }
+                // 「仅悬停显露 Delete」：用条件 if 真正把按钮从布局里移除，不悬停时完全无占位、右侧不留空隙；
+                // 悬停时按钮带 .move(edge:.trailing)+.opacity 从行尾滑入，同时 HStack 重排把 Restore/Reveal 平滑推左。
+                // role: .destructive 保留「危险」语义与无障碍；但 .bordered 下该语义不上色，故显式 .tint(.red) 让其呈红。
+                if isHovered {
+                    Button("Delete", role: .destructive) {
+                        snapshotPendingDelete = info
+                    }
+                    .tint(.red)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                }
             }
-            .opacity(isHovered ? 1 : 0)
-            .allowsHitTesting(isHovered)
+            // 仅对悬停态变化做动画：插入/移除 Delete 时该簇平滑重排（滑入 + 其余按钮左移），其它更新不被波及。
+            .animation(.smooth(duration: 0.18), value: isHovered)
         }
-        // 逐行各自跟踪悬停：进入设为本行 id；离开仅在「当前记录的就是本行」时清空，
+        // 在整行级别跟踪悬停（hoveredSnapshotID）：往簇里插按钮不会改变行的命中区域，悬停态稳定、不闪、不丢。
+        // 逐行各自跟踪：进入设为本行 id；离开仅在「当前记录的就是本行」时清空，
         // 避免快速划过相邻行时 B 行的「离开」误清掉 A 行刚设的悬停态。
         .onHover { hovering in
             hoveredSnapshotID = hovering ? info.id : (hoveredSnapshotID == info.id ? nil : hoveredSnapshotID)
