@@ -4,7 +4,7 @@
 //
 //  通用设置：登录启动、Dock 图标、新建绑定的默认激活配置，以及全局「激活配置表」编辑。
 //  配置表（增删改名 + 每状态动作）写回 AppModel。后台/前台三态均可编辑；
-//  选「Minimize」时延迟申请 Accessibility 权限（PRD D5）。
+//  选「Minimize」或「Cycle Windows」时延迟申请 Accessibility 权限（PRD D5）。
 //
 
 import SwiftUI
@@ -206,7 +206,7 @@ struct GeneralSettingsView: View {
             get: { config.background },
             set: {
                 var c = config; c.background = $0; model.updateActivationConfig(c)
-                if $0 == .minimize { requestMinimizePermissionIfNeeded() }
+                if $0 == .minimize { requestAccessibilityPermissionIfNeeded() }
             }
         )
     }
@@ -216,14 +216,14 @@ struct GeneralSettingsView: View {
             get: { config.frontmost },
             set: {
                 var c = config; c.frontmost = $0; model.updateActivationConfig(c)
-                if $0 == .minimize { requestMinimizePermissionIfNeeded() }
+                if $0 == .minimize || $0 == .cycleWindowsThenHide { requestAccessibilityPermissionIfNeeded() }
             }
         )
     }
 
-    /// 用户选「Minimize」时延迟申请 Accessibility 权限（PRD D5）。已授权则不打扰。
+    /// 用户选需要 AX 的动作（Minimize / Cycle Windows）时延迟申请 Accessibility 权限（PRD D5）。已授权则不打扰。
     /// 系统提示打开「系统设置 › 隐私与安全性 › 辅助功能」；不授权时 App 其余功能不受影响。
-    private func requestMinimizePermissionIfNeeded() {
+    private func requestAccessibilityPermissionIfNeeded() {
         guard !minimizer.isTrusted else { return }
         minimizer.requestPermission()
     }

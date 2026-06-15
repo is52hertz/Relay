@@ -767,23 +767,6 @@
         }
       }
     },
-    "Minimize needs Accessibility access": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最小化需要辅助功能权限"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最小化需要輔助使用權限"
-          }
-        }
-      }
-    },
     "Name": {
       "extractionState": "manual",
       "localizations": {
@@ -1091,19 +1074,19 @@
       }
     },
     "Relay": {},
-    "Relay can’t minimize the window until you grant Accessibility access. Open System Settings › Privacy & Security › Accessibility and enable Relay, then try again.": {
+    "Relay can’t control windows until you grant Accessibility access. Open System Settings › Privacy & Security › Accessibility and enable Relay, then try again.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "在你授予辅助功能权限之前，Relay 无法最小化窗口。请打开「系统设置 › 隐私与安全性 › 辅助功能」并启用 Relay，然后重试。"
+            "value": "在你授予辅助功能权限之前，Relay 无法控制窗口。请打开「系统设置 › 隐私与安全性 › 辅助功能」并启用 Relay，然后重试。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "在你授予輔助使用權限之前，Relay 無法最小化視窗。請開啟「系統設定 › 隱私權與安全性 › 輔助使用」並啟用 Relay，然後重試。"
+            "value": "在你授予輔助使用權限之前，Relay 無法控制視窗。請開啟「系統設定 › 隱私權與安全性 › 輔助使用」並啟用 Relay，然後重試。"
           }
         }
       }
@@ -1427,6 +1410,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "跟隨系統語言"
+          }
+        }
+      }
+    },
+    "Window control needs Accessibility access": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口控制需要辅助功能权限"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "視窗控制需要輔助使用權限"
           }
         }
       }
