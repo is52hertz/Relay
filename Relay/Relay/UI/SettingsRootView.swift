@@ -13,6 +13,7 @@ struct SettingsRootView: View {
         case general = "General"
         case personalization = "Personalization"
         case data = "Data"
+        case about = "About"
         var id: Self { self }
 
         /// 侧栏/标题用：必须是 LocalizedStringKey 才会本地化（rawValue 是 String，传给 Label 会被当 verbatim）。
@@ -21,6 +22,7 @@ struct SettingsRootView: View {
             case .general: "General"
             case .personalization: "Personalization"
             case .data: "Data"
+            case .about: "About"
             }
         }
 
@@ -29,6 +31,7 @@ struct SettingsRootView: View {
             case .general: "gearshape"
             case .personalization: "paintbrush"
             case .data: "externaldrive"
+            case .about: "info.circle"
             }
         }
     }
@@ -56,6 +59,9 @@ struct SettingsRootView: View {
                 case .data:
                     DataSettingsView()
                         .navigationTitle(Pane.data.title)
+                case .about:
+                    AboutSettingsView()
+                        .navigationTitle(Pane.about.title)
                 }
             }
             // 零尺寸的占位 toolbar item：强制 SwiftUI 给窗口安装 NSToolbar。
