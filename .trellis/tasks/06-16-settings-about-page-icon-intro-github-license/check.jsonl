@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核对：.about pane 接入符合设置窗口约定、Form 风格与其它 pane 一致、外链经 Link/NSWorkspace 打开(无内嵌 web)、键盘/VoiceOver 可达、三语 en/zh-Hans/zh-Hant 齐全"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "核对：文件落位与命名、中文 why 注释、版本读 bundle 非硬编码、无私有 API/无网络请求"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "核对：关于页未引入模型/持久化变更、纯只读、不破坏分层(视图层读 bundle/app 图标即可)"}
