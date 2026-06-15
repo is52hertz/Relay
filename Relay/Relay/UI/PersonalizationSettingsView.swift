@@ -26,9 +26,9 @@ struct PersonalizationSettingsView: View {
 
     var body: some View {
         Form {
+            languageSection
             menuBarIconSection
             menuBarVisibilitySection
-            languageSection
         }
         .formStyle(.grouped)
         .onAppear {
