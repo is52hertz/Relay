@@ -757,3 +757,74 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 20: GitHub CI release pipeline (auto-release on main merge) + v1.0
+
+**Date**: 2026-06-27
+**Task**: GitHub CI release pipeline (auto-release on main merge) + v1.0
+**Branch**: `feat/ci-release-pipeline`
+
+### Summary
+
+搭好 CI/Release 管道（macos-26 托管，未签名 .zip+.dmg，合并 main 即发版，版本 bump 发正式版/同版发 prerelease），PR build-only 门禁，发布首个正式版 v1.0，release notes 改英文分段式并加 paths-ignore。
+
+### Main Changes
+
+### Main Changes
+
+- 新增 GitHub Actions CI/Release 管道（此前仓库无任何 workflow）：
+  - `release.yml`：`push: main` → 托管 `macos-26` 构建未签名 Relay（Release）→ `ditto` 打 `.zip` + `hdiutil` 打 `.dmg` → `softprops/action-gh-release` 发版。版本取自 `MARKETING_VERSION`。同版本首次→正式版 `v<ver>`（latest），后续→prerelease `v<ver>-<run>`（幂等）。`concurrency: release-main` 串行。
+  - `ci.yml`：`pull_request` → build-only 门禁。**不跑测试**：托管 runner OS 26.4 < 部署目标 26.5，宿主 XCTest 无法启动（research 实证）。
+- 前置：把 Relay scheme 设为 shared 并提交 `Relay.xcscheme`（否则 CI 干净检出 `-scheme Relay` 解析不到）。
+- 收尾打磨：release body 改英文分段式（Download / First launch，动态版本号）；加 `paths-ignore`（`.github/**`、`.trellis/**`、`docs/**`、`**/*.md`）让纯文档/配置/簿记不发版；加 `workflow_dispatch` 手动口子。已发布的 v1.0 body 经 API 同步更新。
+- 全链路真机验证：ci.yml + release.yml 在 `macos-26` 跑通；首个正式版 **v1.0** 发布（含 .dmg + .zip，标 latest）；paths-ignore 经 PR#20 合并验证确实不触发发版。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `069316f` | ci: auto-release on main merge + PR build gate |
+| `cc863da` | chore(task): add CI release pipeline PRD + research + jsonl |
+| `366ae46` | ci: bump actions to Node 24 majors |
+| `6194762` | ci(release): polish release notes + scope release triggers |
+
+（另：本轮还有独立的 #17 P1 修复 `29b8634` 及 #15–#19 的合并提交，不属本任务。）
+
+### Testing
+
+- [OK] 本地：`xcodebuild build` Release 成功 + ditto/.zip + hdiutil/.dmg + `minos 26.5` 校验。
+- [OK] 真机：ci.yml build-only 绿（含升级 checkout@v5 后无弃用告警）；release.yml 全步骤绿。
+- [OK] 产物：v1.0 含 `Relay-1.0.dmg`(3.37MB) + `Relay-1.0.zip`(2.91MB)，prerelease=false、latest。
+- [OK] paths-ignore：PR#20（纯 .github + .md）合并后无 release run 触发。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- README 三语仍写"signed with a personal Apple Development certificate"，与未签名 CI 产物不符，待更正。
+- #15/#16 的 3 个 P2（cycle 游标重置 / 快照同秒撞名 / 恢复时悬空 binding.configID）仍未修。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `069316f` | (see git log) |
+| `cc863da` | (see git log) |
+| `366ae46` | (see git log) |
+| `6194762` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
