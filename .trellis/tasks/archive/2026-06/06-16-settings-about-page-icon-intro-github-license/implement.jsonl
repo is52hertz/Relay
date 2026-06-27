@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核心：在 SettingsRootView 加 .about pane(枚举 case + title/icon + detail switch)、设置 Window/NavigationSplitView 约定、Form/.formStyle(.grouped) 与现有 pane 一致、Link 打开外链、三语 Localizable.xcstrings、键盘+VoiceOver"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "文件组织(新 AboutSettingsView.swift 丢进 UI/ 即编译,勿手改 pbxproj)、命名、中文 why 注释、用户可见英文文案 + 三语本地化规则"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "分层：关于页是纯静态只读视图,不动 AppModel/持久化;版本/图标在视图层经 Foundation/AppKit 读取(bundle、applicationIconImage),不引入模型变更"}

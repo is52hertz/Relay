@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 17
+- **Total Sessions**: 19
 - **Last Active**: 2026-06-16
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~689 | Active |
+| `journal-1.md` | ~759 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 19 | 2026-06-16 | Menu-bar icon visibility toggle + always-on global toggle hotkey | `a99a06d`, `3247f83`, `76c39dd` | `feat/settings-about-page` |
+| 18 | 2026-06-16 | Settings About pane + Personalization Language reorder | `8bc33eb`, `495d5ad`, `d5d5214` | `feat/settings-about-page` |
 | 17 | 2026-06-16 | Data management: backup / restore / reset + rolling snapshots (with live list & hover delete) | `1a22267`, `3225fa0`, `c5122d3`, `a2cf376`, `6c9f146`, `9691d77`, `35bb910` | `feat/data-management-backup-restore-reset` |
 | 16 | 2026-06-15 | Frontmost cycle-windows-then-hide (opt-in FrontmostAction) + permission UX fix | `1eeed1e`, `f265c48`, `6b0b367`, `95686d8` | `feat/frontmost-cycle-windows-then-hide` |
 | 15 | 2026-06-15 | Personalization: customizable menu bar icon (SF Symbol presets + custom) | `3ebaab7`, `d26e36b` | `feat/personalization-menu-bar-icon` |
