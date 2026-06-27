@@ -8,6 +8,14 @@ name: Release
 on:
   push:
     branches: [main]
+    # 仅源码/工程改动才发版；文档、CI 配置、Trellis 簿记的纯改动不触发 release。
+    # （混合改动只要含非忽略文件仍会发版。）
+    paths-ignore:
+      - ".github/**"
+      - ".trellis/**"
+      - "docs/**"
+      - "**/*.md"
+  workflow_dispatch: # 手动补发/重发的安全阀（paths-ignore 抑制了纯配置/文档变更的自动发版）
 
 permissions:
   contents: write # 创建 Release / 推 tag 需要写权限
@@ -96,10 +104,14 @@ jobs:
             dist/Relay-*.zip
             dist/Relay-*.dmg
           body: |
-            > ⚠️ **未签名构建**（本项目无 Apple Developer 付费账号），macOS 会因隔离属性阻止首次打开。
-            >
-            > 下载后任选其一解除隔离：
-            > - 终端：`xattr -dr com.apple.quarantine /path/to/Relay.app`
-            > - 或在 Finder 里右键 App → 「打开」，首次确认。
-            >
-            > 需要 **macOS 26.5+**。
+            ## ⬇️ Download
+
+            Grab **Relay-${{ steps.ver.outputs.version }}.dmg** (or `.zip`) from **Assets** below.
+            Requires **macOS 26.5+** · Apple Silicon.
+
+            ## 🚀 First launch
+
+            Relay is an **unsigned** build (no paid Apple Developer account), so macOS quarantines it on first open. Allow it once via either:
+
+            - **Finder** — right-click `Relay.app` → **Open** → **Open**
+            - **Terminal** — `xattr -dr com.apple.quarantine /Applications/Relay.app`

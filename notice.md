@@ -15,7 +15,11 @@ Cross-cutting, durable project facts for the next agent. Scope = whole repo.
   （需限定非 fork 触发，避免公开仓库 fork PR 在你机器上跑任意代码）。
 
 ### `release.yml` — 合并 main 即发版
-- 触发：`push: branches: [main]`。`concurrency: release-main` 串行化，避免并发抢同一 tag。
+- 触发：`push: branches: [main]`，但带 `paths-ignore`（`.github/**`、`.trellis/**`、`docs/**`、`**/*.md`）
+  → 纯文档/CI 配置/Trellis 簿记改动**不**发版（混合改动只要含非忽略文件仍会发版）。
+  另有 `workflow_dispatch` 手动补发口子。`concurrency: release-main` 串行化，避免并发抢同一 tag。
+- 发版说明（release body）：英文分段式（Download / First launch），版本号取自 `${{ steps.ver.outputs.version }}`，
+  后接自动生成的 What's Changed。
 - 构建：`xcodebuild build`（Release，未签名）→ `ditto` 打 `.zip` + `hdiutil` 打 `.dmg`。
 - 版本来源：`MARKETING_VERSION`（经 `xcodebuild -showBuildSettings` 读；工程 `GENERATE_INFOPLIST_FILE=YES`，无静态 Info.plist）。
 - **发布粒度**：
