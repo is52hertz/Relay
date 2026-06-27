@@ -1,0 +1,2 @@
+{"file": ".trellis/tasks/06-27-lower-minimum-macos-deployment-target-to-broaden-os-support/research/macos-deployment-floor-analysis.md", "reason": "核对 target=14 后无 >14 未守卫 API；defaultLaunchBehavior 已守卫 15+。"}
+{"file": ".trellis/tasks/06-27-lower-minimum-macos-deployment-target-to-broaden-os-support/prd.md", "reason": "对照 locked Requirements / Acceptance Criteria 逐条核对（pbxproj 4 块、修饰符守卫、三语 README + release body、构建绿）。"}
