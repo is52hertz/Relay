@@ -1,0 +1,2 @@
+{"file": ".trellis/tasks/06-27-github-ci-release-pipeline-auto-release-on-main-merge/research/github-macos-runner-xcode-26.md", "reason": "Runner 选型与硬约束：macos-26 托管 runner 自带 Xcode 26.5+26.5 SDK 可编译；但 runner OS 26.4 < 26.5 → 宿主单测无法启动，PR 门禁只能 build-only。"}
+{"file": ".trellis/tasks/06-27-github-ci-release-pipeline-auto-release-on-main-merge/research/unsigned-macos-app-auto-release-conventions.md", "reason": "无签名 app 的 build/打包/发版惯例：CODE_SIGNING_ALLOWED=NO + ditto 打 .zip + hdiutil 打 .dmg + softprops/action-gh-release 发幂等 tag；scheme 需 shared、版本取自 MARKETING_VERSION。"}
