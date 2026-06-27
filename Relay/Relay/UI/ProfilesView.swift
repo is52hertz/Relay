@@ -88,7 +88,11 @@ struct ProfilesView: View {
             .toolbar {
                 // flexible spacer 顶在前面，把 Add Profile 推到侧栏工具栏区的右端
                 // （侧栏右上角），而非默认贴着红绿灯的左端。
-                ToolbarSpacer(.flexible)
+                // ToolbarSpacer 是 macOS 26+ API；旧系统（部署目标 15）降级为默认位置——仅外观差异，
+                // 功能不变。toolbar content builder 支持 if #available（不同于 SceneBuilder）。
+                if #available(macOS 26.0, *) {
+                    ToolbarSpacer(.flexible)
+                }
                 ToolbarItem {
                     Button(action: addProfile) {
                         Label("Add Profile", systemImage: "plus")

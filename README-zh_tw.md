@@ -28,7 +28,7 @@ README-zh_tw.md — 繁體中文版本，與 README.md（英文權威源）同�
 <p align="center">
   <a href="https://github.com/is52hertz/Relay/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/is52hertz/Relay?sort=semver&display_name=tag&include_prereleases" /></a>
   <a href="https://github.com/is52hertz/Relay/releases"><img alt="downloads" src="https://img.shields.io/github/downloads/is52hertz/Relay/total" /></a>
-  <img alt="macOS" src="https://img.shields.io/badge/macOS-26%2B-000?logo=apple&logoColor=white" />
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-15%2B-000?logo=apple&logoColor=white" />
   <img alt="Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-555" />
   <img alt="Swift" src="https://img.shields.io/badge/Swift-SwiftUI%20%C2%B7%20AppKit-F05138?logo=swift&logoColor=white" />
   <img alt="license" src="https://img.shields.io/badge/license-GPL--3.0-success" />
@@ -86,7 +86,7 @@ Relay 是一款原生 macOS 全域 **應用程式切換器**，理念上類似 T
 ## 💻 執行需求
 
 - **Apple Silicon** Mac
-- **macOS 26.5 或更新版本**
+- **macOS 15（Sequoia）或更新版本**
 
 ---
 
