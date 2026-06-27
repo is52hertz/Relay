@@ -107,7 +107,7 @@ jobs:
             ## ⬇️ Download
 
             Grab **Relay-${{ steps.ver.outputs.version }}.dmg** (or `.zip`) from **Assets** below.
-            Requires **macOS 26.5+** · Apple Silicon.
+            Requires **macOS 15+** · Apple Silicon.
 
             ## 🚀 First launch
 

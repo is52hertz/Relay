@@ -9,10 +9,9 @@ Cross-cutting, durable project facts for the next agent. Scope = whole repo.
 ### `ci.yml` — PR build 门禁
 - 触发：`pull_request`（+ 手动 `workflow_dispatch`）。
 - 动作：`xcodebuild build`（Debug，未签名，**build-only**）。
-- **为什么不跑测试**：托管 `macos-26` 的 runner OS 是 **26.4**，低于 app 部署目标 **26.5**；
-  dyld 无法在 26.4 启动 26.5 二进制，宿主型 XCTest（含单测，TEST_HOST=Relay.app）会启动失败。
-  待托管镜像 OS 升到 26.5 即可在此加 `xcodebuild test`；或用 self-hosted 26.5 Mac 专跑测试
-  （需限定非 fork 触发，避免公开仓库 fork PR 在你机器上跑任意代码）。
+- **build-only（现可加测试）**：曾因 runner OS 26.4 < 旧部署目标 26.5、dyld 无法在 26.4 启动 26.5
+  二进制而无法跑宿主 XCTest；**部署目标已降到 15**（≤ 26.4），托管 runner 现在**可以**跑宿主单测了。
+  build-only 现在是「尚未启用」的选择而非硬限制——后续可在 ci.yml 加 `xcodebuild test`（仅注意 fork PR 安全）。
 
 ### `release.yml` — 合并 main 即发版
 - 触发：`push: branches: [main]`，但带 `paths-ignore`（`.github/**`、`.trellis/**`、`docs/**`、`**/*.md`）
@@ -29,6 +28,12 @@ Cross-cutting, durable project facts for the next agent. Scope = whole repo.
   同版本的后续合并只产 prerelease。
 
 ### 关键约束 / 坑
+- **最低系统 = macOS 15.0**（`MACOSX_DEPLOYMENT_TARGET`，4 个 build-config 块）。把最低钉在 15 的是
+  `RelayApp.swift` 的 `.defaultLaunchBehavior(.suppressed)`（macOS 15+，且 **SceneBuilder 不支持
+  控制流 / 无 AnyScene**，无法只在 15+ 条件应用 → 不能再低，除非删它/重写外壳）。唯一更高（macOS 26）
+  的 API 是 `ProfilesView.swift` 的 `ToolbarSpacer(.flexible)`，已用 `if #available(macOS 26.0, *)`
+  守卫（toolbar builder 支持控制流），旧系统降级为默认按钮位置（仅外观）。**新增 UI 代码注意**：
+  用任何 >15 的 API 必须 `if #available` 守卫（项目以 macOS 26 SDK 构建，编译期不挡）。
 - **Relay scheme 必须 shared**：`Relay.xcodeproj/xcshareddata/xcschemes/Relay.xcscheme` 已提交。
   否则 CI 干净检出 `-scheme Relay` 解析不到（`xcuserdata/` 被 gitignore）。
 - 产物**未签名未公证**（无 Apple Developer 付费账号）：用户首次运行需去隔离

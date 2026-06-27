@@ -1,0 +1,2 @@
+{"file": ".trellis/tasks/06-27-lower-minimum-macos-deployment-target-to-broaden-os-support/research/macos-deployment-floor-analysis.md", "reason": "逐 API 版本表 + file:line：哪些 >14 需守卫（仅 defaultLaunchBehavior 15+）、依赖最低 10.15、各档代价。实现据此只动 pbxproj + RelayApp 修饰符守卫。"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "SwiftUI-first（MenuBarExtra + Window，AppModel 单一数据源）的架构约束——降级不得破坏这些 pillar。"}
