@@ -73,6 +73,20 @@ final class HotkeyRegistrationService {
         bindingsByName.removeAll()
     }
 
+    /// 释放「全部」全局热键——Profile 绑定 **和** 常驻应用命令（AppCommand）。专用于 relaunch / terminate 前。
+    /// 与 deactivateAll() 的区别：deactivateAll() 只服务「切 Profile」，必须保留常驻命令（切换菜单栏图标的热键常驻可用）；
+    /// 而 `open -n` 拉起新实例、终止旧实例期间，新旧进程短暂重叠，旧进程若仍持有任一 Carbon 热键，
+    /// 新进程注册同组合可能失败且 KeyboardShortcuts 吞掉失败不重试（切语言后该热键失效；菜单图标隐藏时还会把用户锁在外面）。
+    /// 故此处比 deactivateAll() 多清应用命令——遍历 AppCommand.allCases 释放每个命令的快捷键。
+    func releaseAllForRelaunch() {
+        deactivateAll()
+        for command in AppCommand.allCases {
+            let name = command.shortcutName
+            KeyboardShortcuts.setShortcut(nil, for: name)
+            KeyboardShortcuts.disable(name)
+        }
+    }
+
     // MARK: - 全局应用命令（常驻，与 Profile 无关）
 
     /// 注入某个应用命令被触发时执行的动作（如「翻转菜单栏图标可见性」）。由 AppController 在组合根接线。

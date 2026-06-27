@@ -48,7 +48,9 @@ final class AppController {
         // 重启前两件副作用须在 `open -n` 之前完成：flush 落盘（P1）+ 释放全局热键（P2，消除新旧进程重叠持有 Carbon 热键的窗口）。顺序不敏感，flush 在前保留 P1 语义清晰。
         self.languageService = LanguageService(beforeRelaunch: { [model, registration] in
             model.saveNow()
-            registration.deactivateAll()
+            // 释放「全部」热键（含常驻应用命令），消除新旧进程重叠持有 Carbon 热键的窗口；
+            // 仅 deactivateAll() 会漏掉切换菜单栏图标的常驻热键 → 新实例注册失败、菜单图标隐藏时锁死用户。
+            registration.releaseAllForRelaunch()
         })
         self.activation = activation
         self.registration = registration
