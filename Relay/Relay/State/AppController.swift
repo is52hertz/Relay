@@ -13,7 +13,7 @@ import Foundation
 final class AppController {
     let model: AppModel
     let resolver: TargetAppResolver
-    /// 暴露给 UI（编辑器选 Minimize 时延迟申请 Accessibility 权限）。
+    /// 暴露给 UI（编辑器选 Minimize 或 Cycle Windows 时延迟申请 Accessibility 权限）。
     let minimizer: WindowMinimizer
     /// 暴露给设置 UI（个性化标签页的语言切换）。
     let languageService: LanguageService
@@ -54,9 +54,14 @@ final class AppController {
         self.dockIcon = dockIcon
         self.model = model
 
-        // 配置为 minimize 但 AX 未授权时触发：弹一次性提示（不做任何破坏性动作，PRD D4）。
+        // 配置为 minimize 或 cycleWindowsThenHide 但 AX 未授权时触发：弹一次性提示（不做任何破坏性动作，PRD D4）。
         minimizer.onPermissionDenied = { [weak self] in
             self?.warnAccessibilityDeniedOnce()
+        }
+
+        // cycleWindowsThenHide：某 App 失去前台时清空其窗口轮换游标（切走再切回从头开始，PRD R3）。
+        frontmost.onAppResignedFrontmost = { [activation] bundleID in
+            activation.resetWindowCycle(forBundleID: bundleID)
         }
 
         model.hotkeysDidChange = { [registration] profile in
@@ -93,16 +98,16 @@ final class AppController {
         }
     }
 
-    /// 一次性提示「最小化需 Accessibility 授权」。绝不在此自动改用别的破坏性动作（PRD D4）。
-    /// 引导用户在「通用设置 › 选 Minimize」处显式授权，或直接打开系统设置。
+    /// 一次性提示「窗口控制需 Accessibility 授权」（覆盖 minimize 与 cycleWindowsThenHide，同一权限、同一开关）。
+    /// 绝不在此自动改用别的破坏性动作（PRD D4）。引导用户在「通用设置 › 选 Minimize / Cycle Windows」处显式授权，或直接打开系统设置。
     private func warnAccessibilityDeniedOnce() {
         guard !didWarnAccessibilityDenied else { return }
         didWarnAccessibilityDenied = true
         NSApplication.shared.activate()
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "Minimize needs Accessibility access")
-        alert.informativeText = String(localized: "Relay can’t minimize the window until you grant Accessibility access. Open System Settings › Privacy & Security › Accessibility and enable Relay, then try again.")
+        alert.messageText = String(localized: "Window control needs Accessibility access")
+        alert.informativeText = String(localized: "Relay can’t control windows until you grant Accessibility access. Open System Settings › Privacy & Security › Accessibility and enable Relay, then try again.")
         alert.addButton(withTitle: String(localized: "Open System Settings"))
         alert.addButton(withTitle: String(localized: "Later"))
         if alert.runModal() == .alertFirstButtonReturn {

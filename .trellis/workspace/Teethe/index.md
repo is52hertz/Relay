@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 15
+- **Total Sessions**: 16
 - **Last Active**: 2026-06-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~614 | Active |
+| `journal-1.md` | ~650 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 16 | 2026-06-15 | Frontmost cycle-windows-then-hide (opt-in FrontmostAction) + permission UX fix | `1eeed1e`, `f265c48`, `6b0b367`, `95686d8` | `feat/frontmost-cycle-windows-then-hide` |
 | 15 | 2026-06-15 | Personalization: customizable menu bar icon (SF Symbol presets + custom) | `3ebaab7`, `d26e36b` | `feat/personalization-menu-bar-icon` |
 | 14 | 2026-06-15 | README group (en/zh-Hans/zh-Hant) + GPL LICENSE + first preview release v0.1.0-preview.1 | `ec289ed`, `7a971ad` | `main` |
 | 13 | 2026-06-15 | Fix PR #12 review finding: release global hotkeys before language-switch relaunch (P2) | `f8dfc90`, `aa309df`, `a953eda` | `fix/profile-uiux` |

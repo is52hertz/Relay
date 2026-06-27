@@ -612,3 +612,39 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 16: Frontmost cycle-windows-then-hide (opt-in FrontmostAction) + permission UX fix
+
+**Date**: 2026-06-15
+**Task**: Frontmost cycle-windows-then-hide (opt-in FrontmostAction) + permission UX fix
+**Branch**: `feat/frontmost-cycle-windows-then-hide`
+
+### Summary
+
+新增可选 FrontmostAction.cycleWindowsThenHide：目标已在前台时连按热键循环抬升各窗口(最小化窗口先复原再抬升)、轮完再隐藏，复用 WindowMinimizer 公开 AX(无私有 API)、内存循环状态机经 FrontmostTracker 失焦重置、无 Accessibility 时安全降级为 hide。更新 system-integration.md 记录 AX 窗口管理例外。手测发现并修复两处权限 UX 缺口：降级提示文案通用化(不再误报最小化)、编辑器选轮换也懒申请权限。三语本地化齐全，build+RelayTests 均绿。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1eeed1e` | (see git log) |
+| `f265c48` | (see git log) |
+| `6b0b367` | (see git log) |
+| `95686d8` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

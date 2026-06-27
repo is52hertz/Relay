@@ -51,11 +51,12 @@ nonisolated enum BackgroundAction: String, Codable, CaseIterable, Hashable, Send
 
 /// 「前台」可选动作（全部接入引擎；minimize 经 Accessibility，延迟授权）。
 nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
-    case returnToPrevious // 切回上一个
-    case hide             // 隐藏
-    case quit             // 退出
-    case none             // 不做事
-    case minimize         // 最小化（经 Accessibility，延迟授权）
+    case returnToPrevious   // 切回上一个
+    case hide               // 隐藏
+    case quit               // 退出
+    case none               // 不做事
+    case minimize           // 最小化（经 Accessibility，延迟授权）
+    case cycleWindowsThenHide // 逐个轮换窗口，全部展示过后再隐藏（经 Accessibility，延迟授权）
 
     var id: String { rawValue }
 
@@ -66,6 +67,7 @@ nonisolated enum FrontmostAction: String, Codable, CaseIterable, Hashable, Senda
         case .quit: String(localized: "Quit")
         case .none: String(localized: "Do Nothing")
         case .minimize: String(localized: "Minimize")
+        case .cycleWindowsThenHide: String(localized: "Cycle Windows, then Hide")
         }
     }
 

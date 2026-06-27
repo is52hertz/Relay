@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核心契约：AppActivationService/AppActivationDecision 的状态→动作流、NSWorkspace.openApplication/NSRunningApplication 控制别的 App 的规范、禁用 CGEventTap/全局 NSEvent、以及最小化已开的按需 Accessibility 例外——窗口循环复用同一 AX 入口与降级模型"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "分层与组合根：服务经 AppController 注入(不用单例)、AppModel 为唯一可变状态、持久化 Codable JSON 规则——新增 FrontmostAction case 会被持久化,循环状态仅存内存不入 AppModel"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "默认 MainActor 隔离;数据模型(含 FrontmostAction 枚举)必须 nonisolated 且不 import AppKit/SwiftUI 才能保证 Codable/解码;循环状态机服务停在 MainActor"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "文件组织(新 .swift 丢进 Services/ 即编译,勿手改 pbxproj)、命名(…Service/…Tracker)、中文 why 注释密度、Swift Testing 写法"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "Config 编辑器里新增 FrontmostAction 选项的 UI 接入位置与 SwiftUI/AppKit 约定;配合三语 Localizable.xcstrings 文案"}

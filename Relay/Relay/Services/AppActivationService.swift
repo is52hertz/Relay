@@ -7,6 +7,7 @@
 //
 
 import AppKit
+import ApplicationServices
 
 @MainActor
 final class AppActivationService {
@@ -16,10 +17,25 @@ final class AppActivationService {
     private let minimizer: WindowMinimizer
     private let workspace = NSWorkspace.shared
 
+    /// cycleWindowsThenHide 的每 App 轮换状态（仅内存、不持久化，PRD R3）：
+    /// 启动一轮时快照窗口顺序（z-order），之后每按一次只推进游标抬升下一个窗口，
+    /// 绝不每次重新按实时 z-order 取序——抬升会改 z-order，否则两个窗口会来回 ping-pong（PRD R4 关键陷阱）。
+    private struct CycleState {
+        var windows: [AXUIElement] // 起始 z-order 快照，AXUIElement 作稳定身份（CFEqual 匹配）
+        var cursor: Int            // 上次停留的窗口下标（首次进入 = 焦点窗口下标，无焦点 = -1）
+    }
+    /// key = bundleIdentifier。切走该 App 时由 onAppResignedFrontmost 清空（PRD R3）。
+    private var cycleStates: [String: CycleState] = [:]
+
     init(resolver: TargetAppResolver, frontmost: FrontmostTracker, minimizer: WindowMinimizer) {
         self.resolver = resolver
         self.frontmost = frontmost
         self.minimizer = minimizer
+    }
+
+    /// 清空指定 App 的窗口轮换状态（App 失去前台时调用，PRD R3）。由 AppController 接到 FrontmostTracker。
+    func resetWindowCycle(forBundleID bundleID: String) {
+        cycleStates[bundleID] = nil
     }
 
     // MARK: - 运行态判定
@@ -75,7 +91,72 @@ final class AppActivationService {
             showWithoutFocus(app)
         case .minimize:
             minimizeTarget(app)
+        case .cycleWindowsOrHide:
+            cycleWindowsOrHide(app)
         }
+    }
+
+    /// 前台时逐个轮换窗口、全部展示过后再隐藏（PRD R2）。状态机见 CycleState/WindowCycleDecision。
+    /// 降级（PRD R5）：AX 未授权 → 退化为普通 hide，并触发与 minimize 同一套一次性权限提示（复用 minimizer 回调）。
+    private func cycleWindowsOrHide(_ app: TargetApp) {
+        // AX 未授权：退化为 hide + 一次性提示（onPermissionDenied 即 minimize 用的同一回调）。
+        guard minimizer.isTrusted else {
+            hideTarget(app)
+            minimizer.onPermissionDenied?()
+            return
+        }
+        guard let pid = resolver.runningInstances(of: app).first?.processIdentifier else { return }
+        let bundleID = app.bundleIdentifier
+
+        // 实时枚举当前窗口（仅用于「与快照比对」及「≤1 窗口直接 hide」；轮换顺序仍以快照为准）。
+        let liveWindows = minimizer.orderedWindows(ofPID: pid)
+        guard liveWindows.count > 1 else {
+            // 单窗口 / 无窗口：等同普通 hide，并清掉可能残留的状态（PRD R6）。
+            hideTarget(app)
+            cycleStates[bundleID] = nil
+            return
+        }
+
+        // 取 / 重建快照：无状态、或窗口集合变化（开/关了窗口）→ 重新快照并把游标定到焦点窗口下标（PRD Q2/Q3）。
+        var state: CycleState
+        if let existing = cycleStates[bundleID], sameWindowSet(existing.windows, liveWindows) {
+            state = existing
+        } else {
+            let focusedIndex = minimizer.focusedWindowIndex(in: liveWindows, ofPID: pid) ?? -1
+            state = CycleState(windows: liveWindows, cursor: focusedIndex)
+        }
+
+        // 纯逻辑推进游标：决定抬升下一个窗口还是 hide+清空。
+        let result = WindowCycleDecision.advance(windowCount: state.windows.count, cursor: state.cursor)
+        switch result.step {
+        case .hideAndReset:
+            hideTarget(app)
+            cycleStates[bundleID] = nil
+        case .raise(let index):
+            minimizer.raiseWindow(state.windows[index])
+            // 抬升单个窗口后还需把 App 真正带到前台（公开 API），否则后台 App 的窗口抬升用户看不到。
+            bringAppForwardWithoutDisturbingWindows(app)
+            state.cursor = result.nextCursor
+            cycleStates[bundleID] = state
+        }
+    }
+
+    /// 把目标 App 置前（用于窗口轮换：AX 已抬升某窗口，再用公开 API 把 App 带到最前）。
+    /// 走 openApplication（activates=true）——与 bringToFront 同一可靠路径——但不调用 minimizer 取消最小化
+    /// （取消最小化已由 raiseWindow 针对「当前轮到的那个窗口」精确完成，避免再动焦点/主窗口）。
+    private func bringAppForwardWithoutDisturbingWindows(_ app: TargetApp) {
+        guard let url = resolver.resolvedURL(for: app) else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        workspace.openApplication(at: url, configuration: configuration, completionHandler: nil)
+    }
+
+    /// 两组窗口快照是否为「同一集合」（顺序无关，用 CFEqual 逐一匹配）。
+    /// 用于判断轮换期间窗口集是否变化（开/关窗口）→ 变了就重新快照（PRD Q2）。
+    private func sameWindowSet(_ a: [AXUIElement], _ b: [AXUIElement]) -> Bool {
+        guard a.count == b.count else { return false }
+        // 每个 a 中的窗口都能在 b 中找到对应（数量相等 + 全包含 ⇒ 集合相等）。
+        return a.allSatisfy { wa in b.contains { minimizer.windowsEqual(wa, $0) } }
     }
 
     /// 显示不聚焦（PRD D6「先抬升再还焦点」option b）：

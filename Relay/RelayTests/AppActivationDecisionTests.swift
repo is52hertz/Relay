@@ -58,6 +58,9 @@ struct AppActivationDecisionTests {
         // minimize 现已接入：决策层产出 .minimize（执行层处理 AX 信任/降级）。
         #expect(AppActivationDecision.action(
             for: .frontmost, config: config(notRunning: .launch, frontmost: .minimize)) == .minimize)
+        // cycleWindowsThenHide：决策层只路由到 .cycleWindowsOrHide，游标/AX 由执行层处理。
+        #expect(AppActivationDecision.action(
+            for: .frontmost, config: config(notRunning: .launch, frontmost: .cycleWindowsThenHide)) == .cycleWindowsOrHide)
     }
 
     @Test func allActionsAreImplemented() {
