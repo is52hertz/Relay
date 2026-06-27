@@ -48,7 +48,9 @@ final class AppController {
         // 重启前两件副作用须在 `open -n` 之前完成：flush 落盘（P1）+ 释放全局热键（P2，消除新旧进程重叠持有 Carbon 热键的窗口）。顺序不敏感，flush 在前保留 P1 语义清晰。
         self.languageService = LanguageService(beforeRelaunch: { [model, registration] in
             model.saveNow()
-            registration.deactivateAll()
+            // 释放「全部」热键（含常驻应用命令），消除新旧进程重叠持有 Carbon 热键的窗口；
+            // 仅 deactivateAll() 会漏掉切换菜单栏图标的常驻热键 → 新实例注册失败、菜单图标隐藏时锁死用户。
+            registration.releaseAllForRelaunch()
         })
         self.activation = activation
         self.registration = registration
@@ -71,17 +73,27 @@ final class AppController {
         model.hotkeysDidChange = { [registration] profile in
             registration.activate(profile)
         }
-        model.settingsDidChange = { [loginItem, dockIcon] settings in
+        model.settingsDidChange = { [loginItem, dockIcon, registration] settings in
             loginItem.setEnabled(settings.launchAtLogin)
             dockIcon.setDockIconVisible(settings.showDockIcon)
+            // 切换热键变化时重应用全局应用命令注册（无变化也无害——只是重设同一组合）。
+            registration.setAppCommandShortcut(.toggleMenuBarIcon, to: settings.menuBarToggleHotkey)
         }
 
-        // 启动即应用当前状态：注册 active profile 热键，同步 Dock/登录项。
+        // 全局应用命令的动作：翻转菜单栏图标可见性（经 AppModel，保持「所有变更经 AppModel」）。
+        // 触发时读最新状态再翻转；隐藏方向由 AppModel.setMenuBarIconVisible 的锁定守卫兜底（此时必有热键，故总能成功）。
+        registration.setAppCommandAction(.toggleMenuBarIcon) { [model] in
+            model.setMenuBarIconVisible(!model.settings.showMenuBarIcon)
+        }
+
+        // 启动即应用当前状态：注册 active profile 热键，同步 Dock/登录项，并装好全局应用命令热键。
         // 单测宿主下跳过这些系统副作用（SMAppService 在 XCTest 宿主中会导致崩溃）。
         if !AppController.isRunningTests {
             registration.activate(model.activeProfile)
             dockIcon.setDockIconVisible(model.settings.showDockIcon)
             loginItem.setEnabled(model.settings.launchAtLogin)
+            // 常驻注册切换热键（与 Profile 无关；deactivateAll 不会清除）。
+            registration.setAppCommandShortcut(.toggleMenuBarIcon, to: model.settings.menuBarToggleHotkey)
             observeTermination()
         }
     }

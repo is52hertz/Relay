@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核对：app 命令热键经 KeyboardShortcuts(无 CGEventTap/全局 NSEvent/私有 API)、常驻且切 Profile 不被 deactivateAll 清除、与 Profile 绑定的冲突有告警;ShortcutRecorder 录制时挂起全局热键"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核对：MenuBarExtra(isInserted:) 正确绑定、防锁死(未设切换热键则禁用隐藏)、UI 落在个性化 pane、键盘/VoiceOver 可达、三语 en/zh-Hans/zh-Hant 齐全"}
+{"file": ".trellis/spec/app/architecture.md", "reason": "核对：schemaVersion 3→4 + 新键 decodeIfPresent 向后兼容(旧 config 仍解码)、可见性翻转经 AppModel、循环/命令状态不污染持久化、组合根注入无单例"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "核对：AppSettings/Hotkey 仍 nonisolated 且不 import AppKit/SwiftUI、app 命令热键服务 MainActor 隔离正确"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "核对：文件落位与命名、中文 why 注释、是否补了 schema-4 兼容/防锁死/命令枚举的 Swift Testing 用例"}

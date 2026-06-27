@@ -750,6 +750,23 @@
         }
       }
     },
+    "Menu Bar Icon Visibility": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "菜单栏图标可见性"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選單列圖示可見性"
+          }
+        }
+      }
+    },
     "Minimize": {
       "extractionState": "manual",
       "localizations": {
@@ -1005,6 +1022,23 @@
         }
       }
     },
+    "Press the toggle hotkey to show or hide the menu bar icon at any time. It works in any profile and isn’t cleared when you switch profiles.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "随时按下切换热键即可显示或隐藏菜单栏图标。它在任何配置中都有效，切换配置时也不会被清除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隨時按下切換快速鍵即可顯示或隱藏選單列圖示。它在任何設定檔中都有效，切換設定檔時也不會被清除。"
+          }
+        }
+      }
+    },
     "Profiles": {
       "extractionState": "manual",
       "localizations": {
@@ -1244,6 +1278,23 @@
         }
       }
     },
+    "Set a toggle hotkey before you can hide the icon. The hotkey always brings it back, even when the icon is hidden, so you’re never locked out.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏图标前请先设置一个切换热键。即使图标已隐藏，该热键也始终能把它唤回，让你不会被锁在外面。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱藏圖示前請先設定一個切換快速鍵。即使圖示已隱藏，該快速鍵也始終能把它喚回，讓你不會被鎖在外面。"
+          }
+        }
+      }
+    },
     "Set as Active": {
       "extractionState": "manual",
       "localizations": {
@@ -1329,6 +1380,23 @@
         }
       }
     },
+    "Show menu bar icon": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示菜单栏图标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示選單列圖示"
+          }
+        }
+      }
+    },
     "These shortcuts use this behavior and will fall back to the default behavior:": {
       "extractionState": "manual",
       "localizations": {
@@ -1359,6 +1427,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "切換隱藏"
+          }
+        }
+      }
+    },
+    "Toggle hotkey": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换热键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切換快速鍵"
           }
         }
       }

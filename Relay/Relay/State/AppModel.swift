@@ -214,6 +214,31 @@ final class AppModel {
         }
     }
 
+    // MARK: - Menu bar icon visibility + toggle hotkey（F-A / F-B）
+
+    /// 设置菜单栏图标可见性。锁定守卫（R5）：仅当已配置切换热键时才允许隐藏，
+    /// 否则把图标藏了又没有热键唤回 = 把自己锁在外面。无热键时请求隐藏一律忽略（防御性，UI 也会禁用控件）。
+    func setMenuBarIconVisible(_ visible: Bool) {
+        guard MenuBarIconLockout.canSet(visible: visible, toggleHotkey: configuration.settings.menuBarToggleHotkey)
+        else { return }
+        guard configuration.settings.showMenuBarIcon != visible else { return }
+        var s = configuration.settings
+        s.showMenuBarIcon = visible
+        settings = s // 经 setter：去抖落盘 + settingsDidChange（让 AppController 重应用 MenuBarExtra 可见性等）。
+    }
+
+    /// 设置/清除切换菜单栏图标的全局热键。
+    /// 边界（R5）：清除热键（设为 nil）时若图标当前是隐藏的，会把用户锁在外面——故清热键时自动恢复图标可见。
+    /// 选「自动恢复图标」而非「禁止清除」：更不易让用户卡死，且语义直观（没有安全出口就不允许保持隐藏）。
+    func setMenuBarToggleHotkey(_ hotkey: Hotkey?) {
+        var s = configuration.settings
+        s.menuBarToggleHotkey = hotkey
+        if hotkey == nil && !s.showMenuBarIcon {
+            s.showMenuBarIcon = true // 没有热键就不能保持隐藏，自动唤回图标。
+        }
+        settings = s
+    }
+
     // MARK: - Bulk replace（导入/恢复/重置的唯一批量入口，保持「所有变更经 AppModel」不变量）
 
     /// 用一份新 config 整体替换当前配置（导入备份 / 恢复快照 / 重置默认）。
@@ -233,6 +258,13 @@ final class AppModel {
         if !sanitized.activationConfigs.contains(where: { $0.id == sanitized.settings.defaultConfigID }),
            let firstConfigID = sanitized.activationConfigs.first?.id {
             sanitized.settings.defaultConfigID = firstConfigID
+        }
+
+        // 批量导入绕过了 setMenuBarIconVisible 的逐次锁定守卫，故在此重申不变量（防御性，与上面悬空引用净化同源）：
+        // 手改 schema-4 备份可能带「图标隐藏 + 无切换热键」，导入后没有热键能唤回图标 = 把用户锁在外面，强制恢复可见。
+        if !MenuBarIconLockout.canSet(visible: sanitized.settings.showMenuBarIcon,
+                                      toggleHotkey: sanitized.settings.menuBarToggleHotkey) {
+            sanitized.settings.showMenuBarIcon = true
         }
 
         configuration = sanitized

@@ -17,6 +17,29 @@ Global hotkeys never need it.
 - **Never** use `CGEventTap` or global `NSEvent` monitors — they need Accessibility/Input
   Monitoring and are out of scope.
 
+### App-command hotkeys (always-on, profile-independent)
+
+There is a **second registration category** beyond per-app-target bindings: **global app commands**
+(`AppCommand` enum → a stable `KeyboardShortcuts.Name`, e.g. `"appCommand.toggleMenuBarIcon"`).
+This is an **intentional, spec-noted exception** to "register only the active Profile" — an app
+*control* command, not a target binding, but still via `KeyboardShortcuts` (Carbon key+modifier),
+just **always-on**.
+
+- `HotkeyRegistrationService.setAppCommandShortcut(_:to:)` sets/clears the command's shortcut and
+  installs its `onKeyDown` **once** (handler reads the injected action). `setAppCommandAction(_:action:)`
+  injects the side effect (wired in `AppController`).
+- **`deactivateAll()` must NOT clear app-command Names** — it only clears profile-binding Names
+  (`activeNames`). App commands survive profile switches; that's the whole point (the menu-bar
+  toggle hotkey must work in any profile).
+- First user: **toggle menu-bar icon** (`showMenuBarIcon`). Its handler flips visibility via
+  `AppModel.setMenuBarIconVisible`, which enforces the **lockout guard**
+  (`MenuBarIconLockout.canSet`): the icon may be hidden **only when a toggle hotkey is set**, so a
+  menu-bar agent can never lock the user out. Clearing the toggle hotkey while hidden auto-restores
+  the icon.
+- **Conflict risk** (a profile binding sharing the command's physical combo) is *undefined /
+  first-wins* in Carbon `RegisterEventHotKey`. MVP surfaces nothing and does not auto-resolve —
+  just a code comment.
+
 ### Conflict detection (what's possible)
 
 - Intra-profile duplicates: detect ourselves with `HotkeyConflicts.duplicateBindingIDs(in:)`
