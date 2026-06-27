@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 19
-- **Last Active**: 2026-06-16
+- **Total Sessions**: 20
+- **Last Active**: 2026-06-27
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~759 | Active |
+| `journal-1.md` | ~830 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 20 | 2026-06-27 | GitHub CI release pipeline (auto-release on main merge) + v1.0 | `069316f`, `cc863da`, `366ae46`, `6194762` | `feat/ci-release-pipeline` |
 | 19 | 2026-06-16 | Menu-bar icon visibility toggle + always-on global toggle hotkey | `a99a06d`, `3247f83`, `76c39dd` | `feat/settings-about-page` |
 | 18 | 2026-06-16 | Settings About pane + Personalization Language reorder | `8bc33eb`, `495d5ad`, `d5d5214` | `feat/settings-about-page` |
 | 17 | 2026-06-16 | Data management: backup / restore / reset + rolling snapshots (with live list & hover delete) | `1a22267`, `3225fa0`, `c5122d3`, `a2cf376`, `6c9f146`, `9691d77`, `35bb910` | `feat/data-management-backup-restore-reset` |
