@@ -828,3 +828,72 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 21: Lower minimum macOS deployment target to 15.0 + v1.1
+
+**Date**: 2026-06-27
+**Task**: Lower minimum macOS deployment target to 15.0 + v1.1
+**Branch**: `feat/lower-macos-deployment-target`
+
+### Summary
+
+最低 macOS 26.5→15.0（pbxproj + ToolbarSpacer 守卫到26+），真机构建揭示 SceneBuilder 无法条件应用 defaultLaunchBehavior（钉死15）、ToolbarSpacer 是26 API（research漏判）；三语 README/release/notice 同步；bump 1.1 发正式版 v1.1。
+
+### Main Changes
+
+### Main Changes
+
+- 把最低 macOS 从 `26.5` 降到 **15.0**（`MACOSX_DEPLOYMENT_TARGET` 4 块），扩大可用系统范围。
+- 关键经验：**research 静态扫描不可靠，以真实构建为准**。真机 target-15 构建抓到两件 research 漏判的事：
+  1. `defaultLaunchBehavior(.suppressed)`（macOS 15+）**无法条件应用**——SwiftUI `SceneBuilder` 不支持控制流，且无 `AnyScene` 类型擦除。→ 这把最低钉在 15（保留该修饰符）；要更低必须删它/重写外壳。
+  2. `ToolbarSpacer(.flexible)`（ProfilesView，**macOS 26 API**，research 称"无 26 API"是错的）。toolbar builder 支持控制流，已 `if #available(macOS 26.0, *)` 守卫，旧系统降级为默认按钮位置（仅外观）。
+- 目标抉择：12.7/13（@Observable→ObservableObject + AppKit 外壳重写）否决；14 需删修饰符 + 真机不可测，owner 选 **15（零行为变化、零风险）**。
+- 文档：README 三语运行时要求 + 徽章 26→15（保留 Build-from-source 的 Xcode 26/26.5 主机要求）；release body 26.5→15；notice.md 记录最低系统、SceneBuilder 限制、"ci 现可加宿主单测（runner 26.4 ≥ 15）"。
+- 发版：bump `MARKETING_VERSION` 1.0→1.1，合并 main → 自动发**正式版 v1.1**（首次验证"版本 bump→正式版"路径，之前只验过 v1.0）。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `14c95f0` | feat: lower minimum macOS to 15.0 (broaden OS support) |
+| `c9382a5` | chore(task): add lower-macOS-deployment-target PRD + research + jsonl |
+| `9f0c99a` | chore(release): bump MARKETING_VERSION 1.0 → 1.1 |
+
+### Testing
+
+- [OK] 本地 `xcodebuild build -scheme Relay` 在 target 15.0 成功。
+- [OK] CI（PR #22）在真机 macos-26 上 target-15 build 绿。
+- [OK] release.yml 发出正式版 **v1.1**（Relay-1.1.dmg + .zip，prerelease=false，latest）。
+- [!] macOS 15 真实运行时行为 CI 测不了（runner 26.x）——需 owner 真机抽验。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- README 三语仍写"signed with a personal Apple Development certificate"，与未签名 CI 产物不符，待更正。
+- 可在 ci.yml 启用宿主单测（现 runner 26.4 ≥ 部署目标 15）。
+- #15/#16 的 3 个 P2 仍未修。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `14c95f0` | (see git log) |
+| `c9382a5` | (see git log) |
+| `9f0c99a` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 20
+- **Total Sessions**: 21
 - **Last Active**: 2026-06-27
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~830 | Active |
+| `journal-1.md` | ~899 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 21 | 2026-06-27 | Lower minimum macOS deployment target to 15.0 + v1.1 | `14c95f0`, `c9382a5`, `9f0c99a` | `feat/lower-macos-deployment-target` |
 | 20 | 2026-06-27 | GitHub CI release pipeline (auto-release on main merge) + v1.0 | `069316f`, `cc863da`, `366ae46`, `6194762` | `feat/ci-release-pipeline` |
 | 19 | 2026-06-16 | Menu-bar icon visibility toggle + always-on global toggle hotkey | `a99a06d`, `3247f83`, `76c39dd` | `feat/settings-about-page` |
 | 18 | 2026-06-16 | Settings About pane + Personalization Language reorder | `8bc33eb`, `495d5ad`, `d5d5214` | `feat/settings-about-page` |
