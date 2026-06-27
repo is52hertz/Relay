@@ -17,6 +17,8 @@ final class AppController {
     let minimizer: WindowMinimizer
     /// 暴露给设置 UI（个性化标签页的语言切换）。
     let languageService: LanguageService
+    /// 暴露给设置 UI（Data 面板：导出/导入/重置 + 滚动快照）。
+    let backupService: BackupService
 
     private let frontmost: FrontmostTracker
     private let activation: AppActivationService
@@ -53,6 +55,8 @@ final class AppController {
         self.loginItem = loginItem
         self.dockIcon = dockIcon
         self.model = model
+        // 快照目录 = config.json 同容器下的 Backups/（reset 只重写 config.json，快照得以幸存）。
+        self.backupService = BackupService()
 
         // 配置为 minimize 或 cycleWindowsThenHide 但 AX 未授权时触发：弹一次性提示（不做任何破坏性动作，PRD D4）。
         minimizer.onPermissionDenied = { [weak self] in

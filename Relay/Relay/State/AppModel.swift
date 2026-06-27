@@ -214,6 +214,34 @@ final class AppModel {
         }
     }
 
+    // MARK: - Bulk replace（导入/恢复/重置的唯一批量入口，保持「所有变更经 AppModel」不变量）
+
+    /// 用一份新 config 整体替换当前配置（导入备份 / 恢复快照 / 重置默认）。
+    /// 先净化悬空引用（手改/旧备份可能引用不存在的 id），再赋值并触发既有副作用 hook + 立即落盘：
+    /// - activeProfileID 不指向现存 profile → 取第一个 profile（无 profile 则 nil）。
+    /// - settings.defaultConfigID 不指向现存激活配置 → 取第一条（无配置则保持原值，防御性）。
+    func replaceConfiguration(_ new: AppConfiguration) {
+        var sanitized = new
+
+        if let activeID = sanitized.activeProfileID,
+           !sanitized.profiles.contains(where: { $0.id == activeID }) {
+            sanitized.activeProfileID = sanitized.profiles.first?.id
+        } else if sanitized.activeProfileID == nil {
+            sanitized.activeProfileID = sanitized.profiles.first?.id
+        }
+
+        if !sanitized.activationConfigs.contains(where: { $0.id == sanitized.settings.defaultConfigID }),
+           let firstConfigID = sanitized.activationConfigs.first?.id {
+            sanitized.settings.defaultConfigID = firstConfigID
+        }
+
+        configuration = sanitized
+        // 重注册 active profile 热键、应用登录项/Dock 副作用，并立即落盘（避免去抖窗口内丢失批量替换）。
+        hotkeysDidChange?(activeProfile)
+        settingsDidChange?(configuration.settings)
+        saveNow()
+    }
+
     // MARK: - Persistence (debounced)
 
     private func scheduleSave() {

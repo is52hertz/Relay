@@ -17,7 +17,13 @@ AppController = composition root that wires State ↔ Services.
 
 - `configuration` is `private(set)`. **All mutations go through `AppModel` methods**
   (`addProfile`, `setActiveProfile`, `addBinding`, `updateBinding`, `removeBindings`,
-  `setBindings`, `settings` setter…). Never mutate config from outside.
+  `setBindings`, `settings` setter, `replaceConfiguration` for bulk swap…). Never mutate config
+  from outside.
+- **Bulk swap = `replaceConfiguration(_:)`** (used by restore/reset): it **sanitizes dangling
+  references** (`activeProfileID` → an existing profile or nil; `settings.defaultConfigID` → an
+  existing config) before assigning, then fires the hooks and `saveNow()` (immediate, not the
+  debounced path — a bulk swap must not be lost in the 400ms window). A hand-edited or older
+  backup may dangle, so sanitization is mandatory.
 - The UI reads via `@Environment(AppModel.self)` and writes via explicit
   `Binding(get:set:)` that call those methods (see ui/swiftui.md), or via small methods.
 - **`AppModel` imports only `Foundation` + `Observation` — no AppKit/SwiftUI.** This keeps it
@@ -49,6 +55,28 @@ fans out to the service.
   at runtime via `TargetAppResolver` / `NSWorkspace`.
 - Keep persisted formats independent of third-party libraries: `Hotkey` stores Carbon codes,
   converted to/from `KeyboardShortcuts.Shortcut` only at the edges (`Hotkey+KeyboardShortcuts`).
+
+## Backup / restore / reset (`BackupService`)
+
+- **Backups are versioned envelopes, not raw `config.json`.** `BackupEnvelope`
+  (`formatVersion`, `appVersion`, `exportedAt`, `schemaVersion`, `configuration`) wraps the
+  `AppConfiguration`. Import **gates on `schemaVersion`**: an envelope newer than
+  `AppConfiguration.currentSchemaVersion` is rejected (`BackupError.newerSchema`); equal/older
+  decodes via the existing `decodeIfPresent` compat path. Corrupt input → `unreadable`, with **no
+  mutation** to current data.
+- **Automatic rolling snapshots** are the undo safety net: before every destructive op
+  (reset / import / restore-from-snapshot) the *current* config is written to
+  `…/cn.Teethe.Relay/Backups/` (reuse `PersistenceStore.containerDirectory()` — don't duplicate
+  the bundle-id), keeping the newest **N=10**. Snapshot failure prompts Continue/Cancel — never a
+  silent destroy. Snapshots survive a reset (reset only rewrites `config.json`); off-machine
+  recovery is the manual export's job, not these.
+- `BackupService` is **Foundation-only and injected from `AppController`** (AppKit-free → unit
+  testable). The `NSSavePanel` / `NSOpenPanel` / `NSAlert` live in the UI layer
+  (`DataSettingsView`), which hands chosen URLs to the service. Backup scope is the Codable
+  `AppConfiguration` only — including `AppSettings` preferences (`launchAtLogin`, `showDockIcon`,
+  `menuBarIconName`), which are re-applied via `settingsDidChange` on restore. The only excluded
+  state is what lives **outside** `AppConfiguration`: the UI language
+  (`AppleLanguages` / `RelayPreferredLanguage` in `UserDefaults`).
 
 ## Adding a feature — the path
 

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/app/architecture.md", "reason": "核心：AppModel 为唯一可变源、所有变更须走 AppModel 方法(新增 replaceConfiguration 整体替换 + 净化悬空引用)、PersistenceStore Codable JSON 持久化、服务经 AppController 组合根注入(BackupService 不用单例)、bulk 变更后须触发 hotkeysDidChange/settingsDidChange/saveNow 钩子"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "BackupEnvelope/SnapshotInfo 等值类型须 nonisolated 且只 import Foundation(保证 Codable/解码);BackupService 保持 AppKit-free 以便单测;默认 MainActor 隔离"}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "恢复/重置触发 settingsDidChange 的副作用正确性：LoginItemService(SMAppService)与 DockIconController(activation policy)的行为与边界;以及为何语言/登录项属 OS 侧、不纳入备份"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "新增 .data pane 接入 SettingsRootView(独立 Window、NavigationSplitView 约定)、NSSavePanel/NSOpenPanel 与 NSAlert/confirmationDialog 复用范式、三语本地化"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "文件组织(新 .swift 丢进 Services/Models/UI 即编译,勿手改 pbxproj)、命名(…Service)、中文 why 注释、Swift Testing 覆盖信封 round-trip/schema 校验/快照轮转/净化逻辑"}

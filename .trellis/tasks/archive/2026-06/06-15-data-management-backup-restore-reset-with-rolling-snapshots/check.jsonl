@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/app/architecture.md", "reason": "核对：bulk 替换只走 AppModel.replaceConfiguration、悬空引用(activeProfileID/defaultConfigID)被净化、副作用钩子全部触发、BackupService 经组合根注入无单例、备份不破坏 SoT/持久化契约"}
+{"file": ".trellis/spec/swift/concurrency.md", "reason": "核对：信封/快照值类型仍 nonisolated 且不 import AppKit/SwiftUI、BackupService 的 MainActor 隔离与文件 IO 无数据竞争、可单测"}
+{"file": ".trellis/spec/app/system-integration.md", "reason": "核对：恢复后登录项/Dock 副作用正确生效、未把 OS 侧语言/登录项误纳入备份、无任何云/网络代码(本地安全边界)"}
+{"file": ".trellis/spec/ui/swiftui.md", "reason": "核对：.data pane 符合设置窗口约定、破坏性操作有二次确认、面板留在 UI 层、键盘/VoiceOver 可达、三语 en/zh-Hans/zh-Hant 齐全"}
+{"file": ".trellis/spec/swift/quality.md", "reason": "核对：文件落位与命名、中文 why 注释、是否补了信封 round-trip/schema 高版本拒绝/快照保留 N 份/净化的 Swift Testing 用例、原子写与错误安全降级"}

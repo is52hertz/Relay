@@ -648,3 +648,42 @@ Added a Menu Bar Icon picker to Settings → Personalization: 4 preset SF Symbol
 ### Next Steps
 
 - None - task complete
+
+
+## Session 17: Data management: backup / restore / reset + rolling snapshots (with live list & hover delete)
+
+**Date**: 2026-06-16
+**Task**: Data management: backup / restore / reset + rolling snapshots (with live list & hover delete)
+**Branch**: `feat/data-management-backup-restore-reset`
+
+### Summary
+
+新增设置「数据」pane：导出(版本化信封 .relaybackup)/导入(schemaVersion 闸门 + 损坏安全报错)/重置,均经新增 AppModel.replaceConfiguration(净化悬空引用 + 触发钩子 + 立即保存)。自动滚动快照(Backups/ 保留10份)作 reset/import 前安全网,DispatchSource 目录监听让列表实时(监听收敛到 pane 可见期,fd 安全)。每条快照可恢复/Finder 显示/悬停显露红色删除按钮(滑入动画)。BackupService Foundation-only 可单测,面板留 UI 层,备份仅含 AppConfiguration(语言/登录属偏好澄清)。更新 architecture.md;手测 29/30(1.4 为措辞已修正);新增 BackupService/replaceConfiguration 单测全绿;附手动测试清单 HTML。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1a22267` | (see git log) |
+| `3225fa0` | (see git log) |
+| `c5122d3` | (see git log) |
+| `a2cf376` | (see git log) |
+| `6c9f146` | (see git log) |
+| `9691d77` | (see git log) |
+| `35bb910` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

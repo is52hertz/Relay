@@ -43,6 +43,7 @@ struct RelayApp: App {
                 .environment(controller.model)
                 .environment(controller.minimizer)
                 .environment(controller.languageService)
+                .environment(controller.backupService)
         }
         .defaultLaunchBehavior(.suppressed)
         .windowResizability(.contentMinSize)
