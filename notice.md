@@ -29,6 +29,6 @@ Cross-cutting, durable project facts for the next agent. Scope = whole repo.
   否则 CI 干净检出 `-scheme Relay` 解析不到（`xcuserdata/` 被 gitignore）。
 - 产物**未签名未公证**（无 Apple Developer 付费账号）：用户首次运行需去隔离
   （`xattr -dr com.apple.quarantine ...` 或右键打开），README `## 📦 Install` 已说明。
-- 第三方 action 固定主版本：`actions/checkout@v4`、`softprops/action-gh-release@v2`。
+- 第三方 action 固定主版本（均为 Node 24 运行时，避免弃用告警）：`actions/checkout@v5`、`softprops/action-gh-release@v3`。
 
 详细调研：`.trellis/tasks/06-27-github-ci-release-pipeline-auto-release-on-main-merge/research/`。
