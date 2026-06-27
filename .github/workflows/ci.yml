@@ -1,0 +1,38 @@
+name: CI
+
+# PR build 门禁：在合并前编译整个 app，挡住编译/集成错误。
+# 仅 build（不跑测试）：托管 macos-26 runner 的 OS 是 26.4，低于本 app 的部署目标 26.5，
+# 宿主型 XCTest 会因 dyld 无法在 26.4 启动 26.5 二进制而失败。待托管镜像升到 26.5 再加单测，
+# 或改用 self-hosted 26.5 Mac 专跑测试。详见 .trellis 任务 research/github-macos-runner-xcode-26.md。
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Toolchain info
+        run: |
+          sw_vers
+          xcodebuild -version
+
+      - name: Build (Debug, unsigned, build-only)
+        run: |
+          xcodebuild build \
+            -project Relay/Relay.xcodeproj \
+            -scheme Relay \
+            -configuration Debug \
+            -destination 'generic/platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            -derivedDataPath build

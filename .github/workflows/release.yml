@@ -1,0 +1,105 @@
+name: Release
+
+# 合并到 main 即发版：构建未签名的 Relay，打包 .zip + .dmg，发布 GitHub Release。
+# 发布粒度：同一 MARKETING_VERSION 首次 → 正式版 v<version>（标 latest）；
+#           之后同版本的每次合并 → prerelease v<version>-<run_number>（天然唯一、可重入）。
+# 无 Apple Developer 账号 → 产物未签名未公证，用户首次运行需手动去隔离（见 release body / README）。
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # 创建 Release / 推 tag 需要写权限
+
+concurrency:
+  group: release-main # 串行化所有 main 发布，避免并发竞争同一版本 tag
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Toolchain info
+        run: |
+          sw_vers
+          xcodebuild -version
+
+      - name: Read MARKETING_VERSION
+        id: ver
+        run: |
+          VERSION=$(xcodebuild -project Relay/Relay.xcodeproj -scheme Relay -showBuildSettings 2>/dev/null \
+            | awk -F' = ' '/ MARKETING_VERSION /{print $2; exit}')
+          if [ -z "$VERSION" ]; then echo "::error::MARKETING_VERSION not found"; exit 1; fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION"
+
+      - name: Build (Release, unsigned)
+        run: |
+          xcodebuild build \
+            -project Relay/Relay.xcodeproj \
+            -scheme Relay \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            -derivedDataPath build
+
+      - name: Package .zip and .dmg
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.ver.outputs.version }}"
+          APP="build/Build/Products/Release/Relay.app"
+          test -d "$APP" || { echo "::error::Relay.app not found at $APP"; exit 1; }
+          mkdir -p dist
+          # .zip：ditto --keepParent 保留 .app bundle 结构
+          ditto -c -k --keepParent "$APP" "dist/Relay-$VERSION.zip"
+          # .dmg：staging 内放 Relay.app + /Applications 软链（拖拽安装）
+          STAGE="$(mktemp -d)"
+          ditto "$APP" "$STAGE/Relay.app"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create -volname "Relay $VERSION" -srcfolder "$STAGE" -ov -format UDZO "dist/Relay-$VERSION.dmg"
+          ls -lh dist
+
+      - name: Decide release type (full vs prerelease)
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "tag=v$VERSION-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+            echo "name=Relay v$VERSION (build ${{ github.run_number }})" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "make_latest=false" >> "$GITHUB_OUTPUT"
+            echo "Existing v$VERSION release found → publishing prerelease."
+          else
+            echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+            echo "name=Relay v$VERSION" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "make_latest=true" >> "$GITHUB_OUTPUT"
+            echo "No v$VERSION release → publishing full release."
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.decide.outputs.tag }}
+          name: ${{ steps.decide.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ steps.decide.outputs.prerelease }}
+          make_latest: ${{ steps.decide.outputs.make_latest }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/Relay-*.zip
+            dist/Relay-*.dmg
+          body: |
+            > ⚠️ **未签名构建**（本项目无 Apple Developer 付费账号），macOS 会因隔离属性阻止首次打开。
+            >
+            > 下载后任选其一解除隔离：
+            > - 终端：`xattr -dr com.apple.quarantine /path/to/Relay.app`
+            > - 或在 Finder 里右键 App → 「打开」，首次确认。
+            >
+            > 需要 **macOS 26.5+**。
